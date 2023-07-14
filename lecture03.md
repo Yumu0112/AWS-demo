@@ -15,10 +15,10 @@
 |  バージョン  |  5.6.5  |
 |  APサーバーを終了後のアクセス  |  不可  |
 
-![Rails](/images/rails.png)
+![Rails](/rails.png)
 
 APサーバーを終了後
-![Error](/images/error.png)
+![Error](/error.png)
 
 
 ## DBサーバー
@@ -29,10 +29,10 @@ APサーバーを終了後
 |  バージョン  |  8.0.33  |
 |  DBサーバーを終了後のアクセス |  不可  |
 
-![MySQL](/images/mysql.png)
+![MySQL](/mysql.png)
 
 DBサーバーを終了後
-![DBError](/images/db-error.png)
+![DBError](/db-error.png)
 
 ## Railsの構成管理ツール
 
