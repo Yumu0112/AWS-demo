@@ -6,7 +6,7 @@
 - RDSインスタンスの作成
 - SSHでEC2インスタンスに接続
 - EC2にMySQLをインストール
-- EC2からRDSに接続
+- EC2からRDSに接続git 
 
 ## VPCの構築
 
