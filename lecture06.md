@@ -21,13 +21,20 @@
   
  - 動作確認としてNginxサーバーを停止し、502を発生させるとメールが送られてくるかを確認  
    
- - 正常に動作している場合はアラート状態は解消されていることを確認
+ - 正常に動作している場合はアラート状態は解消されていることとHealthyの通知メールを確認
   
 ![set-alart](image06/set-alart.png)  
   
 メール通知  
   
 ![notification](image06/notification.jpeg)  
+  
+サーバー再起動後  
+  
+![restart](image06/hearthcheck.png)  
+  
+![restartNotice](image06/ok-notification.jpeg)  
+
 ***
   
 ## 利用料の見積もり  
@@ -35,7 +42,7 @@
 - 現在までの利用料  
   
 見積もり
-→ https://calculator.aws/#/estimate  
+→ https://calculator.aws/#/estimate?id=7097ce21acb2dc2c4a35fcb2aa8eb8d9286e6eed 
   
 
 ![costs](image06/billing.png)  
