@@ -1,0 +1,70 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Cfn-lecture template for ALB
+
+Parameters:
+  Project:
+    Type: String
+    Default: cf-test
+  VPCStack:
+    Type: String
+    Default: cfn-lecture-vpc
+  EC2Stack:
+    Type: String
+    Default: cfn-lecture-ec2
+
+Resources:
+  LBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties: 
+      GroupDescription: !Ref AWS::StackName
+      VpcId:
+        Fn::ImportValue: !Sub ${VPCStack}-VPCID
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+
+  FrontLB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: !Ref AWS::StackName
+      Scheme: internet-facing
+      IpAddressType: ipv4
+      Subnets:
+        - Fn::ImportValue: !Sub ${VPCStack}-PublicSubnet1
+        - Fn::ImportValue: !Sub ${VPCStack}-PublicSubnet2
+      SecurityGroups: 
+        - !Ref LBSecurityGroup
+
+  FrontLBTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      TargetType: instance
+      Name: !Sub ${Project}-tg
+      Protocol: HTTP
+      Port: 80
+      VpcId:
+        Fn::ImportValue: !Sub ${VPCStack}-VPCID
+      ProtocolVersion: HTTP1
+      HealthCheckProtocol: HTTP
+      HealthCheckPath: /
+      Targets:
+        - Id:
+            Fn::ImportValue: !Sub ${EC2Stack}-EC2WebServer01
+
+  FrontLBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref FrontLB
+      Port: 80
+      Protocol: HTTP 
+      DefaultActions: 
+        - Type: forward
+          TargetGroupArn: !Ref FrontLBTargetGroup
+
+Outputs:
+  FrontLBEndpoint:
+    Value: !GetAtt FrontLB.DNSName
+    Export:
+      Name: !Sub ${AWS::StackName}-Endpoint
