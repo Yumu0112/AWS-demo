@@ -1,0 +1,72 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Cfn-lecture template for RDS
+
+Parameters:
+  Project:
+    Type: String
+    Default: cf-test
+  VPCStack:
+    Type: String
+    Default: cfn-lecture-vpc
+  EC2Stack:
+    Type: String
+    Default: cfn-lecture-ec2
+  DBUser:
+    Type: String
+    Default: admin
+  DBPassword:
+    Type: String
+    Default: xxxxx
+    NoEcho: true
+  RDSAZ:
+    Type: AWS::EC2::AvailabilityZone::Name
+    Default: us-east-1a
+
+Resources:
+  DBSubnetGroup: 
+    Type: AWS::RDS::DBSubnetGroup
+    Properties: 
+      DBSubnetGroupDescription: DB Subnet Group for Private Subnet
+      SubnetIds: 
+        - Fn::ImportValue: !Sub ${VPCStack}-PrivateSubnet1
+        - Fn::ImportValue: !Sub ${VPCStack}-PrivateSubnet2
+
+  DBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties: 
+      GroupDescription: Created by CFn
+      GroupName: !Sub ${Project}-sg-db
+      VpcId:
+        Fn::ImportValue: !Sub ${VPCStack}-VPCID
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          SourceSecurityGroupId: 
+            Fn::ImportValue: !Sub ${EC2Stack}-WebSecurityGroup
+
+  DBInstance:
+    Type: AWS::RDS::DBInstance
+    DeletionPolicy: Delete
+    Properties:
+      Engine: MySQL
+      EngineVersion: 8.0.32
+      DBInstanceIdentifier: !Sub ${Project}-mysql
+      MasterUsername: !Ref DBUser
+      MasterUserPassword: !Ref DBPassword
+      DBInstanceClass: db.t2.micro
+      StorageType: gp2
+      AllocatedStorage: "20"
+      NetworkType: IPV4
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      PubliclyAccessible: false
+      VPCSecurityGroups:
+        - !Ref DBSecurityGroup
+      AvailabilityZone: !Ref RDSAZ
+      BackupRetentionPeriod: 0
+
+Outputs:
+  DBEndpoint:
+    Value: !GetAtt DBInstance.Endpoint.Address
+    Export:
+      Name: !Sub ${AWS::StackName}-DBEndpoint
