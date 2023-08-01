@@ -22,3 +22,6 @@ Exited with code exit status 4
 SSHCidrIpの形式と、CFnVPCIGWでの不要なリソースが記述されていることによるエラー  
 こちらを解消して再度実行  
   
+![cfn-lint](image12/cfn-lint.png)  
+  
+テスト成功
