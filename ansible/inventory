@@ -1,5 +1,5 @@
 [target_node] 
-"{{ EC2_IP }}"
+$EC2_IP
 
 [target_node:vars] 
 ansible_user=ec2-user 
