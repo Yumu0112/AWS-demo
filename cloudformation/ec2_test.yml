@@ -16,11 +16,6 @@ Parameters:
     Default: 192.168.0.0/24
 
 Resources:
-  NewKeyPair:
-    Type: 'AWS::EC2::KeyPair'
-    Properties:
-      KeyName: !Sub ${Project}-keypair
-
   WebSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties: 
@@ -46,8 +41,8 @@ Resources:
     Type: AWS::EC2::Instance
     Properties:
       ImageId: !Ref EC2AMI
-      InstanceType: t2.micro
-      KeyName: !Ref NewKeyPair
+      InstanceType: t2.small
+      KeyName: test001  # 既存のキーペア名を指定
       NetworkInterfaces:
         - AssociatePublicIpAddress: true
           DeviceIndex: 0
