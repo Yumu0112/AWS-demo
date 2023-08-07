@@ -1,0 +1,8 @@
+- hosts: target_node
+  become: yes
+  remote_user: ec2-user
+  tasks:
+  - name: install git
+    yum:
+      name: git 
+      state: latest
