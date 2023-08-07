@@ -21,8 +21,8 @@ Resources:
     Properties: 
       GroupDescription: !Sub ${Project}-sg-web created
       GroupName: !Sub ${Project}-sg-web
-      VpcId:
-        Fn::ImportValue: !Sub ${VPCStack}-VPCID
+      VpcId: !ImportValue
+        Fn::Sub: '${VPCStack}-VPCID'
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 80
@@ -42,14 +42,14 @@ Resources:
     Properties:
       ImageId: !Ref EC2AMI
       InstanceType: t2.small
-      KeyName: test001
+      KeyName: test001  # Replace with your actual key name
       NetworkInterfaces:
         - AssociatePublicIpAddress: true
           DeviceIndex: 0
-          GroupSet:
+          GroupSet:  # Corrected property name
            - !Ref WebSecurityGroup
-          SubnetId: 
-            Fn::ImportValue: !Sub ${VPCStack}-PublicSubnet1
+          SubnetId: !ImportValue
+            Fn::Sub: '${VPCStack}-PublicSubnet1'
       BlockDeviceMappings: 
         - DeviceName: "/dev/xvda"
           Ebs: 
