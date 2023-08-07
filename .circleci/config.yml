@@ -33,7 +33,7 @@ jobs:
             aws cloudformation deploy --template cloudformation/rds_test.yml --stack-name rds
             aws cloudformation deploy --template cloudformation/elb_test.yml --stack-name elb
             aws cloudformation deploy --template cloudformation/s3_test.yml --stack-name s3
-     - run:
+      - run:
           name: Get EC2 Instance IP
           command: |
             INSTANCE_ID=$(aws cloudformation describe-stack-resources --stack-name ec2 --logical-resource-id NewEC2Instance --query "StackResources[0].PhysicalResourceId" --output text)
