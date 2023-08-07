@@ -43,7 +43,6 @@ Resources:
       ImageId: !Ref EC2AMI
       InstanceType: t2.small
       KeyName: test001  # Replace with your actual key name
-      LogicalResourceId: NewEC2Instance
       NetworkInterfaces:
         - AssociatePublicIpAddress: true
           DeviceIndex: 0

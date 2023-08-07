@@ -36,9 +36,9 @@ jobs:
       - run:
           name: Get EC2 Instance IP
           command: |
-            INSTANCE_ID=$(aws cloudformation describe-stack-resources --stack-name ec2 --logical-resource-id NewEC2Instance --query "StackResources[0].PhysicalResourceId" --output text)
-            PUBLIC_IP=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID --query "Reservations[0].Instances[0].PublicIpAddress" --output text)
-            echo "INSTANCE_IP=$PUBLIC_IP" >> $BASH_ENV
+            export EC2_IP=$(aws cloudformation describe-stacks --stack-name ec2 --query 'Stacks[0].Outputs[?OutputKey==`EC2InstanceIP`].OutputValue' --output text)
+            echo "EC2 Instance IP: $EC2_IP"
+
     
   execute-Ansible:
     executor: ansible-playbook/default
