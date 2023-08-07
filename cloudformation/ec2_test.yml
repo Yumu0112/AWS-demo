@@ -70,5 +70,4 @@ Outputs:
       Name: !Sub ${AWS::StackName}-WebSecurityGroup
   EC2InstanceIP:
     Value: !GetAtt EC2Instance.PublicIp
-    Export:
-      Name: NewEC2InstanceIPExport
+    Description: Public IP of EC2 instance
