@@ -63,7 +63,7 @@ Outputs:
   EC2WebServer01:
     Value: !Ref EC2WebServer01
     Export:
-      Name: !Sub ${AWS::StackName}-EC2WebServer01
+      Name: !Sub ${AWS::StackName}-EC2WebServer01-ver2
   WebSecurityGroup:
     Value: !Ref WebSecurityGroup
     Export:
