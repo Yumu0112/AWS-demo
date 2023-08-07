@@ -36,7 +36,7 @@ jobs:
       - run:
           name: Get EC2 Instance IP
           command: |
-            export EC2_IP=$(aws cloudformation describe-stacks --stack-name ec2 --query 'Stacks[0].Outputs[?OutputKey==`EC2InstanceIP`].OutputValue' --output text)
+            export EC2_IP=$(aws cloudformation describe-stacks --stack-name ec2 --query 'Stacks[0].Outputs[?ExportName==`NewEC2InstanceIPExport`].OutputValue' --output text)
             echo "EC2 Instance IP: $EC2_IP"
           no_output_timeout: 10m
       # - run:
