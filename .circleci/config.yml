@@ -1,8 +1,8 @@
 version: 2.1
 orbs:
+  ansible-playbook: orbss/ansible-playbook@0.0.5
   python: circleci/python@2.0.3
   aws-cli: circleci/aws-cli@3.1.4
-  ansible-playbook: orbss/ansible-playbook@0.0.5
   ruby: circleci/ruby@2.0.1
   
 jobs:
