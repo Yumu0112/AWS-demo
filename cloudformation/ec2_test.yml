@@ -7,7 +7,7 @@ Parameters:
     Default: cf-test
   VPCStack:
     Type: String
-    Default: CFnVPC
+    Default: cf-test-vpc
   EC2AMI:
     Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
     Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
