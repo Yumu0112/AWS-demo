@@ -1,5 +1,5 @@
 [target_node] 
-18.205.247.113
+{{ EC2_IP }}
 
 [target_node:vars] 
 ansible_user=ec2-user 

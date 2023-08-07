@@ -33,6 +33,17 @@ jobs:
             aws cloudformation deploy --template cloudformation/rds_test.yml --stack-name rds
             aws cloudformation deploy --template cloudformation/elb_test.yml --stack-name elb
             aws cloudformation deploy --template cloudformation/s3_test.yml --stack-name s3
+      - run:
+          name: Get EC2 Instance IP
+          command: |
+            export EC2_IP=$(aws cloudformation describe-stacks --stack-name ec2 --query 'Stacks[0].Outputs[?OutputKey==`EC2InstanceIP`].OutputValue' --output text)
+            echo "EC2 Instance IP: $EC2_IP"
+          no_output_timeout: 10m
+      # - run:
+      #     name: Update Ansible Inventory
+      #     command: |
+      #       echo "[target_node]" > ansible/hosts
+      #       echo "$EC2_IP ansible_user=ec2-user ansible_ssh_private_key_file='~/.ssh/test001.pem'" >> ansible/hosts
 
   execute-Ansible:
     executor: ansible-playbook/default
