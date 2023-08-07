@@ -39,8 +39,6 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub ${Project}-subnet-public1-${AZ1}
-    Export:
-      Name: !Sub ${Project}-PublicSubnet1
 
   PublicSubnet2:
     Type: AWS::EC2::Subnet
