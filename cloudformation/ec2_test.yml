@@ -7,7 +7,7 @@ Parameters:
     Default: cf-test
   VPCStack:
     Type: String
-    Default: cf-test-vpc
+    Default: cfn-lecture-vpc
   EC2AMI:
     Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
     Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
@@ -42,7 +42,7 @@ Resources:
     Properties:
       ImageId: !Ref EC2AMI
       InstanceType: t2.small
-      KeyName: test001  # 既存のキーペア名を指定
+      KeyName: test001
       NetworkInterfaces:
         - AssociatePublicIpAddress: true
           DeviceIndex: 0
