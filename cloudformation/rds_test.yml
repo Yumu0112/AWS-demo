@@ -16,7 +16,7 @@ Parameters:
     Default: admin
   DBPassword:
     Type: String
-    Default: xxxxx
+    Default: adminuser
     NoEcho: true
   RDSAZ:
     Type: AWS::EC2::AvailabilityZone::Name
