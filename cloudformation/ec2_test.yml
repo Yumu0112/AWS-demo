@@ -68,8 +68,8 @@ Outputs:
     Value: !Ref WebSecurityGroup
     Export:
       Name: !Sub ${AWS::StackName}-WebSecurityGroup
-  EC2InstanceIP:
-    Description: EC2 Instance IP Address
-    Value: !GetAtt EC2Instance.PublicIp
-    Export:
-      Name: NewEC2InstanceIPExport
+  # EC2InstanceIP:
+  #   Description: EC2 Instance IP Address
+  #   Value: !GetAtt EC2Instance.PublicIp
+  #   Export:
+  #     Name: NewEC2InstanceIPExport
