@@ -1,6 +1,10 @@
 version: 2.1
 orbs:
   python: circleci/python@2.0.3
+  aws-cli: circleci/aws-cli@3.1.4
+  ansible-playbook: orbss/ansible-playbook@0.0.5
+  ruby: circleci/ruby@2.0.1
+  
 jobs:
   cfn-lint:
     executor: python/default
@@ -12,7 +16,80 @@ jobs:
           command: |
             cfn-lint -i W3002 -t cloudformation/*.yml
 
+  execute-CloudFormation:
+    executor: aws-cli/default
+    steps:
+      - checkout
+      - aws-cli/setup:
+          aws-access-key-id: AWS_ACCESS_KEY_ID
+          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
+          aws-region: AWS_DEFAULT_REGION
+      - run:
+          name: deploy Cloudformation
+          command: |
+            set -x
+            aws cloudformation deploy --template cloudformation/vpc_test.yml --stack-name vpc
+            aws cloudformation deploy --template cloudformation/ec2_test.yml --stack-name ec2 --capabilities CAPABILITY_NAMED_IAM
+            aws cloudformation deploy --template cloudformation/rds_test.yml --stack-name rds
+            aws cloudformation deploy --template cloudformation/elb_test.yml --stack-name elb
+            aws cloudformation deploy --template cloudformation/s3_test.yml --stack-name s3
+
+  execute-Ansible:
+    executor: ansible-playbook/default
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - MD5:ec:12:06:fe:8a:1f:ee:33:7d:b4:23:2f:ae:3f:de:18
+      - run:
+          name: Update SSH config
+          command: |
+            echo 'Host *' >> ~/.ssh/config
+            echo '  StrictHostKeyChecking no' >> ~/.ssh/config
+            echo '  UserKnownHostsFile /dev/null' >> ~/.ssh/config
+            chmod 600 ~/.ssh/config
+      - ansible-playbook/install:
+          version: '2.10.7'
+      - ansible-playbook/playbook:
+          playbook: ansible/playbook.yml
+          playbook-options: '-u ec2-user -i ansible/inventory --private-key ~/.ssh/test001.pem'
+
+  execute-serverspec:
+    executor:
+      name: ruby/default
+      tag: '2.6.3' 
+    steps:
+      - checkout
+      - ruby/install-deps:
+          app-dir: serverspec
+          bundler-version: '2.1.4' 
+      - run:
+          name: Update RubyGems
+          command: gem update --system 3.2.3
+      - run:
+          name: Update Bundler
+          command: gem install bundler
+      - run:
+          name: Bundle Install
+          command: |
+            cd serverspec
+            bundle install
+      - run:
+          name: Run serverspec
+          command: |
+            cd serverspec
+            bundle exec rake spec
+
 workflows:
   raisetech:
     jobs:
       - cfn-lint
+      - execute-CloudFormation:
+          requires:
+            - cfn-lint
+      - execute-Ansible:
+          requires:
+            - execute-CloudFormation
+      - execute-serverspec:
+          requires:
+            - execute-Ansible
