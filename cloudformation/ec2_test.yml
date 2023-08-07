@@ -43,6 +43,7 @@ Resources:
       ImageId: !Ref EC2AMI
       InstanceType: t2.small
       KeyName: test001  # Replace with your actual key name
+      LogicalResourceId: NewEC2Instance
       NetworkInterfaces:
         - AssociatePublicIpAddress: true
           DeviceIndex: 0
@@ -68,8 +69,3 @@ Outputs:
     Value: !Ref WebSecurityGroup
     Export:
       Name: !Sub ${AWS::StackName}-WebSecurityGroup
-  # EC2InstanceIP:
-  #   Description: EC2 Instance IP Address
-  #   Value: !GetAtt EC2Instance.PublicIp
-  #   Export:
-  #     Name: NewEC2InstanceIPExport
