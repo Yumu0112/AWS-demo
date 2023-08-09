@@ -38,17 +38,13 @@ jobs:
           command: |
             export EC2_IP=$(aws cloudformation describe-stacks --stack-name ec2 --query 'Stacks[0].Outputs[?OutputKey==`EC2InstanceIP`].OutputValue' --output text)
             echo "EC2 Instance IP: $EC2_IP"
-            echo "EC2_IP=${EC2_IP}" >> $BASH_ENV
+            export EC2_IP
+            echo "EC2_IP=${EC2_IP}"
 
 
   execute-Ansible:
     executor: ansible-playbook/default
     steps:
-      - run:
-            name: Use EC2_IP in Next Job
-            command: |
-              source $BASH_ENV
-              echo "EC2_IP is $EC2_IP"
       - run:
           name: check IP
           command: |
