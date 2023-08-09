@@ -40,7 +40,7 @@ jobs:
             echo "EC2 Instance IP: $EC2_IP"
       - run:
           name: Add EC2 Instance IP to Ansible Inventory
-          command: echo "$EC2_IP" > ansible/inventory
+          command: "[target_node]\n${EC2_IP}" > ansible/inventory
 
 
   execute-Ansible:
