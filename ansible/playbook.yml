@@ -1,4 +1,4 @@
-- hosts: "{{ EC2_IP }}"
+- hosts: all
   become: yes
   remote_user: ec2-user
   tasks:
