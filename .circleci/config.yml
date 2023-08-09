@@ -59,10 +59,11 @@ jobs:
             chmod 600 ~/.ssh/config
       - ansible-playbook/install:
           version: '2.10.7'
-      - ansible-playbook/playbook:
-          playbook: ansible/playbook.yml
-          playbook-options: '-u ec2-user -i "${EC2_IP}," --private-key ~/.ssh/test001.pem'
+      - run:
+          name: Run Ansible Playbook
+          command: ansible-playbook ansible/playbook.yml --extra-vars "target_ip=${EC2_IP}" -u ec2-user --private-key ~/.ssh/test001.pem
 
+          
   execute-serverspec:
     executor:
       name: ruby/default
