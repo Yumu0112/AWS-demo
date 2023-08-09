@@ -43,9 +43,8 @@ jobs:
     executor: ansible-playbook/default
     steps:
       - run:
-          name: check bash env
-          command: |
-            echo $BASH_ENV
+          name: Set Environment Variables
+          command: source $BASH_ENV
       - checkout
       - add_ssh_keys:
           fingerprints:
