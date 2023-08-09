@@ -39,11 +39,10 @@ jobs:
             export EC2_IP=$(aws cloudformation describe-stacks --stack-name ec2 --query 'Stacks[0].Outputs[?OutputKey==`EC2InstanceIP`].OutputValue' --output text)
             echo "EC2 Instance IP: $EC2_IP"
             echo "EC2_IP=${EC2_IP}" >> $BASH_ENV
-            source $BASH_ENV  # 環境変数をカレントシェルに反映
+            source $BASH_ENV 
       - run:
-          name: Add EC2 Instance IP to Ansible Inventory
+          name: check IP
           command: |
-            inventory_content="[target_node]\\n${EC2_IP}"
             echo $EC2_IP
 
 
@@ -63,6 +62,10 @@ jobs:
             chmod 600 ~/.ssh/config
       - ansible-playbook/install:
           version: '2.10.7'
+      - run:
+          name: check IP
+          command: |
+            echo $EC2_IP
       - run:
           name: Run Ansible Playbook
           command: ansible-playbook ansible/playbook.yml --extra-vars "target_ip=${EC2_IP}" -u ec2-user --private-key ~/.ssh/test001.pem
