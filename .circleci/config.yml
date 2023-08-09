@@ -47,7 +47,7 @@ jobs:
       - setup_remote_docker:
           version: 20.10.7
       - aws-cli/install:
-          version: 2
+          version: "2"
       - aws-cli/setup:
           aws-access-key-id: AWS_ACCESS_KEY_ID
           aws-secret-access-key: AWS_SECRET_ACCESS_KEY
