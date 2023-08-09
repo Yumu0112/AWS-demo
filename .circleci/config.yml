@@ -38,34 +38,30 @@ jobs:
           command: |
             export EC2_IP=$(aws cloudformation describe-stacks --stack-name ec2 --query 'Stacks[0].Outputs[?OutputKey==`EC2InstanceIP`].OutputValue' --output text)
             echo "EC2 Instance IP: $EC2_IP"
+      - run:
+          name: Add EC2 Instance IP to Ansible Inventory
+          command: echo "$EC2_IP" > ansible/inventory
 
 
   execute-Ansible:
     executor: ansible-playbook/default
     steps:
       - checkout
-      - setup_remote_docker:
-          version: 20.10.7
-      - aws-cli/install:
-          version: "2"
-      - aws-cli/setup:
-          aws-access-key-id: AWS_ACCESS_KEY_ID
-          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
-          aws-region: AWS_DEFAULT_REGION
-      - run:
-          name: Set EC2_IP
-          command: |
-            export EC2_IP=$(aws cloudformation describe-stacks --stack-name ec2 --query 'Stacks[0].Outputs[?OutputKey==`EC2InstanceIP`].OutputValue' --output text)
-            echo "EC2 Instance IP: $EC2_IP"
       - add_ssh_keys:
           fingerprints:
-            - MD5:ec:12:06:fe:8a:1f:ee:33:7d:b4:23:2f:ae:3f:de:18
+            - 28:b4:54:3b:dd:c0:f9:dd:0d:a8:99:bc:75:02:73:5d
+      - run:
+          name: Update SSH config
+          command: |
+            echo 'Host *' >> ~/.ssh/config
+            echo '  StrictHostKeyChecking no' >> ~/.ssh/config
+            echo '  UserKnownHostsFile /dev/null' >> ~/.ssh/config
+            chmod 600 ~/.ssh/config
       - ansible-playbook/install:
           version: '2.10.7'
       - ansible-playbook/playbook:
           playbook: ansible/playbook.yml
-          playbook-options: '-i ansible/inventory -u ec2-user'
-
+          playbook-options: '-u ec2-user -i ansible/inventory --private-key ~/.ssh/test001.pem'
 
   execute-serverspec:
     executor:
