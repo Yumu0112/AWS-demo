@@ -42,8 +42,7 @@ jobs:
           name: Add EC2 Instance IP to Ansible Inventory
           command: |
             inventory_content="[target_node]\\n${EC2_IP}"
-            echo -e "$inventory_content" > ansible/inventory
-            echo "Inventory content: $inventory_content"
+            echo $EC2_IP
 
 
   execute-Ansible:
