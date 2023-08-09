@@ -93,9 +93,7 @@ workflows:
       - cfn-lint
       - execute-CloudFormation:
           requires:
-            - cfn-lint
-          outputs:
-            - EC2_IP          
+            - cfn-lint        
       - execute-Ansible:
           requires:
             - execute-CloudFormation
