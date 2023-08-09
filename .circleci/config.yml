@@ -38,6 +38,8 @@ jobs:
           command: |
             export EC2_IP=$(aws cloudformation describe-stacks --stack-name ec2 --query 'Stacks[0].Outputs[?OutputKey==`EC2InstanceIP`].OutputValue' --output text)
             echo "EC2 Instance IP: $EC2_IP"
+            echo "EC2_IP=${EC2_IP}" >> $BASH_ENV
+            source $BASH_ENV  # 環境変数をカレントシェルに反映
       - run:
           name: Add EC2 Instance IP to Ansible Inventory
           command: |
