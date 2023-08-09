@@ -1,4 +1,6 @@
 - hosts: target_node
+  vars:
+    EC2_IP: "{{ lookup('env', 'EC2_IP') }}"
   become: yes
   remote_user: ec2-user
   tasks:
