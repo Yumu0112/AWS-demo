@@ -38,14 +38,21 @@ jobs:
           command: |
             export EC2_IP=$(aws cloudformation describe-stacks --stack-name ec2 --query 'Stacks[0].Outputs[?OutputKey==`EC2InstanceIP`].OutputValue' --output text)
             echo "EC2 Instance IP: $EC2_IP"
-            sudo mkdir -p /home/ec2-user/AWS-demo/var
-            sudo chown ec2-user /home/ec2-user/AWS-demo/var/
-            echo "EC2_IP=${EC2_IP}" > /home/ec2-user/AWS-demo/var/.env
+            echo "EC2_IP=${EC2_IP}" >> $BASH_ENV
 
 
   execute-Ansible:
     executor: ansible-playbook/default
     steps:
+      - run:
+            name: Use EC2_IP in Next Job
+            command: |
+              source $BASH_ENV
+              echo "EC2_IP is $EC2_IP"
+      - run:
+          name: check IP
+          command: |
+            echo $EC2_IP
       - checkout
       - add_ssh_keys:
           fingerprints:
@@ -59,13 +66,6 @@ jobs:
             chmod 600 ~/.ssh/config
       - ansible-playbook/install:
           version: '2.10.7'
-      - run:
-          name: Source .env
-          command: source /home/ec2-user/AWS-demo/var/.env
-      - run:
-          name: check IP
-          command: |
-            echo $EC2_IP
       - run:
           name: Run Ansible Playbook
           command: ansible-playbook ansible/playbook.yml --extra-vars "target_ip=${EC2_IP}" -u ec2-user --private-key ~/.ssh/test001.pem
