@@ -56,6 +56,15 @@ jobs:
             chmod 600 ~/.ssh/config
       - ansible-playbook/install:
           version: '2.10.7'
+      - aws-cli/setup:
+        aws-access-key-id: AWS_ACCESS_KEY_ID
+        aws-secret-access-key: AWS_SECRET_ACCESS_KEY
+        aws-region: AWS_DEFAULT_REGION
+      - run:
+          name: Get EC2 Instance IP
+          command: |
+            export EC2_IP=$(aws cloudformation describe-stacks --stack-name ec2 --query 'Stacks[0].Outputs[?OutputKey==`EC2InstanceIP`].OutputValue' --output text)
+            echo "EC2 Instance IP: $EC2_IP"
       - ansible-playbook/playbook:
           playbook: ansible/playbook.yml
           playbook-options: '-i ansible/inventory -u ec2-user --private-key ~/.ssh/test001.pem'
