@@ -61,7 +61,7 @@ jobs:
           version: '2.10.7'
       - ansible-playbook/playbook:
           playbook: ansible/playbook.yml
-          playbook-options: '-u ec2-user -i ansible/inventory --private-key ~/.ssh/test001.pem'
+          playbook-options: '-u ec2-user -i "${EC2_IP}," --private-key ~/.ssh/test001.pem'
 
   execute-serverspec:
     executor:
