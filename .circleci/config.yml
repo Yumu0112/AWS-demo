@@ -37,18 +37,12 @@ jobs:
           name: Get EC2 Instance IP
           command: |
             export EC2_IP=$(aws cloudformation describe-stacks --stack-name ec2 --query 'Stacks[0].Outputs[?OutputKey==`EC2InstanceIP`].OutputValue' --output text)
-            echo "EC2 Instance IP: $EC2_IP"
-            export EC2_IP
-            echo "EC2_IP=${EC2_IP}"
+            echo "EC2_IP=${EC2_IP}" >> $BASH_ENV
 
 
   execute-Ansible:
     executor: ansible-playbook/default
     steps:
-      - run:
-          name: check IP
-          command: |
-            echo $EC2_IP
       - checkout
       - add_ssh_keys:
           fingerprints:
@@ -64,7 +58,7 @@ jobs:
           version: '2.10.7'
       - run:
           name: Run Ansible Playbook
-          command: ansible-playbook ansible/playbook.yml --extra-vars "target_ip=${EC2_IP}" -u ec2-user --private-key ~/.ssh/test001.pem
+          command: ansible-playbook ansible/playbook.yml --inventory "${EC2_IP}," -u ec2-user --private-key ~/.ssh/test001.pem
 
           
   execute-serverspec:
@@ -100,6 +94,8 @@ workflows:
       - execute-CloudFormation:
           requires:
             - cfn-lint
+          outputs:
+            - EC2_IP          
       - execute-Ansible:
           requires:
             - execute-CloudFormation
