@@ -46,6 +46,12 @@ jobs:
       - checkout
       - setup_remote_docker:
           version: 20.10.7
+      - aws-cli/install:
+          version: 2
+      - aws-cli/setup:
+          aws-access-key-id: AWS_ACCESS_KEY_ID
+          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
+          aws-region: AWS_DEFAULT_REGION
       - run:
           name: Set EC2_IP
           command: |
@@ -59,7 +65,7 @@ jobs:
       - ansible-playbook/playbook:
           playbook: ansible/playbook.yml
           playbook-options: '-i ansible/inventory -u ec2-user'
-          
+
 
   execute-serverspec:
     executor:
