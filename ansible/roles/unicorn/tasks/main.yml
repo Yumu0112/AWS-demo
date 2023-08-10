@@ -1,0 +1,19 @@
+- name: Check app installed
+  stat:
+    path: /home/ec2-user/raisetech-live8-sample-app
+  register: app_installed
+
+# サンプルアプリケーションをclone
+- name: Git clone sample app
+  become_user: ec2-user
+  ansible.builtin.git:
+    repo: https://github.com/yuta-ushijima/raisetech-live8-sample-app.git
+    dest: /home/ec2-user/raisetech-live8-sample-app
+  when: not app_installed.stat.exists
+
+
+# unicornインストール
+- name: bundle install
+  shell: bash -lc "bundle install"
+  args: 
+    chdir: /home/ec2-user/raisetech-live8-sample-app/

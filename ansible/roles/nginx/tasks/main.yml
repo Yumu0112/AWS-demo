@@ -1,0 +1,19 @@
+- name: Check if nginx is already installed
+  become: true
+  yum:
+    name: nginx
+    state: present
+  register: check_nginx_installed
+  ignore_errors: true
+
+- name: install the latest version of nginx 
+  command: amazon-linux-extras install nginx1 -y
+  become: true
+  when: check_nginx_installed is failed
+
+- name: start nginx service
+  service:
+    name: nginx
+    state: started
+    enabled: yes
+  become: true

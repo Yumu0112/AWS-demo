@@ -1,8 +1,10 @@
-- hosts: "{{ ec2_ip }}"
+- hosts: "{{ EC2_IP }}"
   become: yes
   remote_user: ec2-user
-  tasks:
-  - name: install git
-    yum:
-      name: git 
-      state: latest
+  roles:
+    - git
+    - node.js
+    - ruby
+    - mysql
+    - unicorn
+    - nginx

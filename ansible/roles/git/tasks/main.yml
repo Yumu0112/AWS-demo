@@ -1,0 +1,7 @@
+# gitのインストール
+- name: Install git
+  become: true
+  yum:
+    name: git
+    state: latest
+    lock_timeout: 180

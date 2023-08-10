@@ -1,0 +1,35 @@
+# mysqlのインストール
+
+# MariaDBの削除
+- name: Remove MariaDB
+  become: true
+  yum:
+    name: mariadb-server
+    state: absent
+
+# 公開リポジトリを追加
+- name: Install MySQL repository
+  become: true
+  yum:
+    name: 'https://repo.mysql.com//mysql80-community-release-el7-7.noarch.rpm'
+    state: present
+
+- name: Import GPG key 
+  become: true
+  ansible.builtin.rpm_key:
+    state: present
+    key: https://repo.mysql.com/RPM-GPG-KEY-mysql-2022
+
+# mysql本体をインストール
+- name: Install MySQL community server
+  become: true
+  yum:
+    name: mysql-community-server
+    state: present
+
+- name: Start MySQL service
+  become: true
+  service:
+    name: mysqld
+    state: started
+    enabled: yes
