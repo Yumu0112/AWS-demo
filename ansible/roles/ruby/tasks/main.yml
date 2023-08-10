@@ -26,7 +26,6 @@
     path: /home/ec2-user/.bash_profile
     line: 'eval "$(rbenv init -)"'
 
-# 環境変数や設定の変更を現在のシェルに反映さ
 - name: rbenv setting
   shell: bash -lc "source ~/.bash_profile"
 
@@ -38,13 +37,6 @@
     dest: /home/ec2-user/.rbenv/plugins/ruby-build
   become: true
 
-# rubyがインストールされているか確認
-- name: check ruby installed
-  stat:
-    path: /home/ec2-user/.rbenv/shims/ruby
-  register: ruby_installed
-
-# インストールされていなければrubyをインストール
 - name: install ruby
   vars:
     ruby_version: 3.2.2
@@ -71,10 +63,6 @@
         - libyaml-dev
         - libgdbm-dev
 
-    - name: Install Ruby using rbenv
-      shell: bash -lc "rbenv install {{ ruby_version }} && rbenv global {{ ruby_version }} && rbenv rehash"
-      when: not ruby_installed.stat.exists
-
 
 - name: set default ruby version rehash
   become_user: ec2-user
@@ -85,35 +73,12 @@
   become_user: ec2-user
   shell: bash -lc "rbenv global {{ ruby_version }}"
 
-
-
-# bundlerがインストールされているか確認
-- name: check bundler installed
-  shell: /home/ec2-user/.rbenv/shims/bundler --version
-  register: bundler_check
-  changed_when: false
-  failed_when: false
-
-# bundlerインストール
 - name: install bundler
   become_user: ec2-user
   shell: bash -lc "gem install bundler -v {{ bundler_version }}"
-  when: bundler_check.rc != 0
 
-
-# railsがインストールされているか確認
-- name: check rails install
-  command: "{{ item }}"
-  register: rails_exists
-  changed_when: false
-  failed_when: "'rails' not in rails_exists.stdout"
-  ignore_errors: true
-  with_items:
-    - bash -lc "gem list -e rails"
-    - bash -lc "gem list rails"
 
 # railsインストール
 - name: install rails
   become_user: ec2-user
   shell: bash -lc "gem install rails -v {{ rails_version }}"
-  when: rails_exists is failed
