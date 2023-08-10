@@ -65,6 +65,23 @@
     path: /home/circleci/.rbenv/shims/ruby
   register: ruby_installed
 
+- name: Install dependencies
+  become: true
+  yum:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - git
+    - gcc
+    - bzip2
+    - openssl-devel
+    - libyaml-devel
+    - libffi-devel
+    - readline-devel
+    - zlib-devel
+    - gdbm-devel
+    - ncurses-devel
+
 #rubyのインストール
 - name: install ruby
   become_user: ec2-user
