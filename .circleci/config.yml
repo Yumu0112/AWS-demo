@@ -70,9 +70,9 @@ jobs:
       - run:
           name: Run Ansible Playbook
           command: |
-          export EC2_IP=$EC2_IP
-          echo "EC2_IP: $EC2_IP"
-          ansible-playbook ansible/playbook.yml --inventory "$EC2_IP,", -u ec2-user --private-key ~/.ssh/test001.pem
+            export EC2_IP=$EC2_IP
+            echo "EC2_IP: $EC2_IP"
+            ansible-playbook ansible/playbook.yml --inventory "$EC2_IP,", -u ec2-user --private-key ~/.ssh/test001.pem
           environment:
             EC2_IP: $EC2_IP
           
