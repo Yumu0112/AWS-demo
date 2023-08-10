@@ -1,19 +1,19 @@
+# rbenvのインストール
+---
 - name: install rbenv
-  become: true
+  become: yes
   git: 
     repo: https://github.com/sstephenson/rbenv.git 
     dest: /home/circleci/.rbenv
 
 - name: edit permission rbenv
-  become: true
+  become: yes
   file:
-    path: /home/ec2-user/.rbenv
+    path: /home/circleci/.rbenv
     state: directory
     owner: ec2-user
     group: ec2-user
 
-# パスを通す
-# echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bash_profile
 - name: Add rbenv to PATH
   lineinfile: 
     path: /home/circleci/.bash_profile
@@ -24,68 +24,33 @@
     path: /home/circleci/.bash_profile
     line: 'eval "$(rbenv init -)"'
 
-# 環境変数や設定の変更を現在のシェルに反映さ
 - name: rbenv setting
   shell: bash -lc "source ~/.bash_profile"
 
-# ruby-buildのインストール 
-# git clone https://github.com/sstephenson/ruby-build.git ~/.rbenv/plugins/ruby-build
+#ruby-buildのインストール 
 - name: install ruby-build
   git:
     repo: https://github.com/sstephenson/ruby-build.git
     dest: /home/circleci/.rbenv/plugins/ruby-build
-  become: true
 
-# rubyがインストールされているか確認
+#ruby install 確認
 - name: check ruby installed
   stat:
     path: /home/circleci/.rbenv/shims/ruby
   register: ruby_installed
 
-# インストールされていなければrubyをインストール
+#rubyのインストール
 - name: install ruby
   become_user: ec2-user
-  shell: bash -lc "rbenv install {{ ruby_version }} && rbenv global {{ ruby_version }} && rbenv rehash"
+  shell: bash -lc "rbenv install {{ ruby_version }}"
   when: not ruby_installed.stat.exists
 
+#rubyを使用可能にする
 - name: set default ruby version rehash
   become_user: ec2-user
   shell: bash -lc "rbenv rehash"
 
-
+#インスタンスで使用するバージョンの設定
 - name: set default ruby version
   become_user: ec2-user
   shell: bash -lc "rbenv global {{ ruby_version }}"
-
-
-
-# bundlerがインストールされているか確認
-- name: check bundler installed
-  shell: /home/circleci/.rbenv/shims/bundler --version
-  register: bundler_check
-  changed_when: false
-  failed_when: false
-
-# bundlerインストール
-- name: install bundler
-  become_user: ec2-user
-  shell: bash -lc "gem install bundler -v {{ bundler_version }}"
-  when: bundler_check.rc != 0
-
-
-# railsがインストールされているか確認
-- name: check rails install
-  command: "{{ item }}"
-  register: rails_exists
-  changed_when: false
-  failed_when: "'rails' not in rails_exists.stdout"
-  ignore_errors: true
-  with_items:
-    - bash -lc "gem list -e rails"
-    - bash -lc "gem list rails"
-
-# railsインストール
-- name: install rails
-  become_user: ec2-user
-  shell: bash -lc "gem install rails -v {{ rails_version }}"
-  when: rails_exists is failed
