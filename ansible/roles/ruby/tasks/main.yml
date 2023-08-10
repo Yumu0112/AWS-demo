@@ -53,15 +53,7 @@
     ruby_version: 3.2.2
   become: yes
   become_user: ec2-user
-  shell: bash -lc "rbenv install {{ ruby_version }} && rbenv global {{ ruby_version }} && rbenv rehash"
-
-- name: set default ruby version rehash
-  become_user: ec2-user
-  shell: bash -lc "rbenv rehash"
-
-- name: set default ruby version
-  become_user: ec2-user
-  shell: bash -lc "rbenv global {{ ruby_version }}"
+  shell: bash -lc "rbenv install {{ ruby_version }}"
 
 - name: install bundler
   become_user: ec2-user
