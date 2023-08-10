@@ -73,7 +73,8 @@ jobs:
             EC2_IP=$(cat /tmp/workspace/ec2_ip.txt) 
             echo "ec2_ip: $EC2_IP"
             cd ansible
-            ansible-playbook playbook.yml --inventory "$EC2_IP," --extra-vars "ec2_ip=$EC2_IP" -u ec2-user --private-key ../../../ec2-user/.ssh/test001.pem
+            pwd
+            ansible-playbook ansible/playbook.yml --inventory "$EC2_IP," --extra-vars "ec2_ip=$EC2_IP" -u ec2-user --private-key /home/ec2-user/.ssh/test001.pem
           environment:
             EC2_IP: $EC2_IP
           
