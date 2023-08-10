@@ -86,6 +86,7 @@
 - name: install ruby
   become_user: ec2-user
   shell: bash -lc "rbenv install {{ ruby_version }}"
+  timeout: 6000  # タイムアウトを10分（600秒）に延長
   when: not ruby_installed.stat.exists
 
 #rubyを使用可能にする
