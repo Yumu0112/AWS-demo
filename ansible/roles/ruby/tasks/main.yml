@@ -1,5 +1,4 @@
 # rbenvインストール
-# git clone https://github.com/sstephenson/rbenv.git ~/.rbenv
 - name: install rbenv
   become: true
   git: 
@@ -15,7 +14,6 @@
     group: ec2-user
 
 # パスを通す
-# echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bash_profile
 - name: Add rbenv to PATH
   lineinfile: 
     path: /home/ec2-user/.bash_profile
@@ -30,13 +28,20 @@
   shell: bash -lc "source ~/.bash_profile"
 
 # ruby-buildのインストール 
-# git clone https://github.com/sstephenson/ruby-build.git ~/.rbenv/plugins/ruby-build
 - name: install ruby-build
   git:
     repo: https://github.com/sstephenson/ruby-build.git
     dest: /home/ec2-user/.rbenv/plugins/ruby-build
   become: true
 
+# openssl-develのインストール
+- name: install openssl-devel
+  become: true
+  yum:
+    name: openssl-devel
+    state: present
+
+# rubyのインストール
 - name: install ruby
   vars:
     ruby_version: 3.2.2
@@ -48,7 +53,6 @@
   become_user: ec2-user
   shell: bash -lc "rbenv rehash"
 
-
 - name: set default ruby version
   become_user: ec2-user
   shell: bash -lc "rbenv global {{ ruby_version }}"
@@ -56,7 +60,6 @@
 - name: install bundler
   become_user: ec2-user
   shell: bash -lc "gem install bundler -v {{ bundler_version }}"
-
 
 # railsインストール
 - name: install rails
