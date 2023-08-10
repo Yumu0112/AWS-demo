@@ -38,6 +38,7 @@ jobs:
           command: |
             export EC2_IP=$(aws cloudformation describe-stacks --stack-name ec2 --query 'Stacks[0].Outputs[?OutputKey==`EC2InstanceIP`].OutputValue' --output text)
             echo $EC2_IP > ec2_ip.txt
+            echo "EC2_IP: $EC2_IP"
       - persist_to_workspace:
           root: .
           paths:
@@ -53,6 +54,7 @@ jobs:
           name: Use EC2 Instance IP
           command: |
             EC2_IP=$(cat /tmp/workspace/ec2_ip.txt) 
+            echo "EC2_IP: $EC2_IP"
       - add_ssh_keys:
           fingerprints:
             - 28:b4:54:3b:dd:c0:f9:dd:0d:a8:99:bc:75:02:73:5d
