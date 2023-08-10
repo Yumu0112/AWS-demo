@@ -46,6 +46,8 @@
 
 # インストールされていなければrubyをインストール
 - name: install ruby
+  vars:
+    ruby_version: 2.7.4
   become_user: ec2-user
   shell: bash -lc "rbenv install {{ ruby_version }} && rbenv global {{ ruby_version }} && rbenv rehash"
   when: not ruby_installed.stat.exists
