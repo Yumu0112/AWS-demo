@@ -69,6 +69,11 @@ jobs:
           version: '2.10.7'
       - run:
           name: Run Ansible Playbook
+          command: ansible-playbook ansible/playbook.yml --inventory "$EC2_IP," -u ec2-user --private-key ~/.ssh/test001.pem -vvv
+          environment:
+            EC2_IP: $EC2_IP    
+      - run:
+          name: Run Ansible Playbook
           command: ansible-playbook ansible/playbook.yml --inventory "$EC2_IP,", -u ec2-user --private-key ~/.ssh/test001.pem
           environment:
             EC2_IP: $EC2_IP
