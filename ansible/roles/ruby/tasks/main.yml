@@ -9,6 +9,11 @@
     state: directory
   when: not bash_profile_directory_exists.stat.exists
 
+- name: Check if .bash_profile exists
+  stat:
+    path: /home/circleci/.bash_profile
+  register: bash_profile_exists
+
 - name: Create .bash_profile if it doesn't exist
   file:
     path: /home/circleci/.bash_profile
