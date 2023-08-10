@@ -77,6 +77,7 @@ jobs:
             cd ../../
             ls
             echo $PWD
+            chmod 600 /home/circleci/project/key/test001.pem
             ansible-playbook /home/circleci/project/ansible/playbook.yml --inventory "$EC2_IP," --extra-vars "ec2_ip=$EC2_IP" -u ec2-user --private-key /home/circleci/project/key/test001.pem
           environment:
             EC2_IP: $EC2_IP
