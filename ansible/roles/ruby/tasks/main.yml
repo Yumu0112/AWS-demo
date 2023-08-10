@@ -4,7 +4,7 @@
   become: true
   git: 
     repo: https://github.com/sstephenson/rbenv.git 
-    dest: /home/ec2-user/.rbenv
+    dest: /home/circleci/.rbenv
 
 - name: edit permission rbenv
   become: true
@@ -18,12 +18,12 @@
 # echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bash_profile
 - name: Add rbenv to PATH
   lineinfile: 
-    path: /home/ec2-user/.bash_profile
+    path: /home/circleci/.bash_profile
     line: 'export PATH="$HOME/.rbenv/bin:$PATH"'
 
 - name: eval rbenv init
   lineinfile: 
-    path: /home/ec2-user/.bash_profile
+    path: /home/circleci/.bash_profile
     line: 'eval "$(rbenv init -)"'
 
 # 環境変数や設定の変更を現在のシェルに反映さ
@@ -35,13 +35,13 @@
 - name: install ruby-build
   git:
     repo: https://github.com/sstephenson/ruby-build.git
-    dest: /home/ec2-user/.rbenv/plugins/ruby-build
+    dest: /home/circleci/.rbenv/plugins/ruby-build
   become: true
 
 # rubyがインストールされているか確認
 - name: check ruby installed
   stat:
-    path: /home/ec2-user/.rbenv/shims/ruby
+    path: /home/circleci/.rbenv/shims/ruby
   register: ruby_installed
 
 # インストールされていなければrubyをインストール
@@ -63,7 +63,7 @@
 
 # bundlerがインストールされているか確認
 - name: check bundler installed
-  shell: /home/ec2-user/.rbenv/shims/bundler --version
+  shell: /home/circleci/.rbenv/shims/bundler --version
   register: bundler_check
   changed_when: false
   failed_when: false
