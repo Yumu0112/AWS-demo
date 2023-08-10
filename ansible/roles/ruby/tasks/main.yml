@@ -41,6 +41,12 @@
     name: openssl-devel
     state: present
 
+- name: Set openssl path
+  become_user: ec2-user
+  lineinfile:
+    path: /home/ec2-user/.bash_profile
+    line: 'export PATH="/usr/local/ssl/bin:$PATH"'
+
 # rubyのインストール
 - name: install ruby
   vars:
