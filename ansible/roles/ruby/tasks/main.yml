@@ -14,12 +14,21 @@
         state: touch
       when: not bash_profile_exists.stat.exists
 
-    - name: Add rbenv to PATH in .bash_profile
-      lineinfile: 
-        path: /home/circleci/.bash_profile
-        line: 'export PATH="$HOME/.rbenv/bin:$PATH"'
-      when: bash_profile_exists.stat.exists
-      
+- name: install rbenv
+  become: true
+  git: 
+    repo: https://github.com/sstephenson/rbenv.git 
+    dest: /home/circleci/.rbenv
+
+- name: edit permission rbenv
+  become: true
+  file:
+    path: /home/ec2-user/.rbenv
+    state: directory
+    owner: ec2-user
+    group: ec2-user
+
+
 - name: install rbenv
   become: true
   git: 
