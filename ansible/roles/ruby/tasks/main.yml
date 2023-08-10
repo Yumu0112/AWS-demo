@@ -97,3 +97,9 @@
 - name: set default ruby version
   become_user: ec2-user
   shell: bash -lc "rbenv global {{ ruby_version }}"
+
+- name: Install bundler
+  become: true
+  gem:
+    name: bundler
+    state: latest
