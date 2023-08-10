@@ -48,9 +48,33 @@
 - name: install ruby
   vars:
     ruby_version: 3.2.2
+  become: yes
   become_user: ec2-user
-  shell: bash -lc "rbenv install {{ ruby_version }} && rbenv global {{ ruby_version }} && rbenv rehash"
-  when: not ruby_installed.stat.exists
+  tasks:
+    - name: Install required packages for Ruby build
+      package:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - gcc
+        - make
+        - libssl-dev   # OpenSSL ヘッダー
+        - zlib1g-dev   # zlib 開発ヘッダー
+        - libreadline-dev
+        - libsqlite3-dev
+        - libpq-dev
+        - libmysqlclient-dev
+        - libcurl4-openssl-dev
+        - libxml2-dev
+        - libxslt1-dev
+        - libffi-dev
+        - libyaml-dev
+        - libgdbm-dev
+
+    - name: Install Ruby using rbenv
+      shell: bash -lc "rbenv install {{ ruby_version }} && rbenv global {{ ruby_version }} && rbenv rehash"
+      when: not ruby_installed.stat.exists
+
 
 - name: set default ruby version rehash
   become_user: ec2-user
