@@ -74,6 +74,9 @@ jobs:
             echo "ec2_ip: $EC2_IP"
             echo $PWD
             ls
+            cd ../../
+            ls
+            echo $PWD
             ansible-playbook /home/ec2-user/AWS-demo/ansible/playbook.yml --inventory "$EC2_IP," --extra-vars "ec2_ip=$EC2_IP" -u ec2-user --private-key /home/ec2-user/.ssh/test001.pem
           environment:
             EC2_IP: $EC2_IP
