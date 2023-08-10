@@ -72,9 +72,9 @@ jobs:
           command: |
             export EC2_IP="$EC2_IP"
             echo "EC2_IP: $EC2_IP"
-            ansible-playbook ansible/playbook.yml --inventory "$EC2_IP", -u ec2-user --private-key ~/.ssh/test001.pem
+            ansible-playbook ansible/playbook.yml --inventory-file ./inventory -u ec2-user --private-key ~/.ssh/test001.pem
           environment:
-            EC2_IP: 44.201.33.198
+            EC2_IP: $EC2_IP
           
   execute-serverspec:
     executor:
