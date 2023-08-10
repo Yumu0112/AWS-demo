@@ -1,106 +1,112 @@
-- name: Check if directory exists for .bash_profile
-  stat:
-    path: /home/circleci
-  register: bash_profile_directory_exists
+version: 2.1
 
-- name: Create directory for .bash_profile if it doesn't exist
-  file:
-    path: /home/circleci
-    state: directory
-  when: not bash_profile_directory_exists.stat.exists
+executors:
+  default:
 
-- name: Check if .bash_profile exists
-  stat:
-    path: /home/circleci/.bash_profile
-  register: bash_profile_exists
+jobs:
+  build:
+    executor: default
+    steps:
+      - checkout  # リポジトリをチェックアウト
 
-- name: Create .bash_profile if it doesn't exist
-  file:
-    path: /home/circleci/.bash_profile
-    state: touch
-  when: not bash_profile_exists.stat.exists
+      - name: Check if directory exists for .bash_profile
+        stat:
+          path: /home/circleci
+        register: bash_profile_directory_exists
 
-- name: Add rbenv to PATH in .bash_profile
-  lineinfile: 
-    path: /home/circleci/.bash_profile
-    line: 'export PATH="$HOME/.rbenv/bin:$PATH"'
-  when: bash_profile_exists.stat.exists
+      - name: Create directory for .bash_profile if it doesn't exist
+        file:
+          path: /home/circleci
+          state: directory
+        when: not bash_profile_directory_exists.stat.exists
 
-- name: install rbenv
-  become: yes
-  git: 
-    repo: https://github.com/sstephenson/rbenv.git 
-    dest: /home/circleci/.rbenv
+      - name: Check if .bash_profile exists
+        stat:
+          path: /home/circleci/.bash_profile
+        register: bash_profile_exists
 
-- name: edit permission rbenv
-  become: yes
-  file:
-    path: /home/circleci/.rbenv
-    state: directory
-    owner: ec2-user
-    group: ec2-user
+      - name: Create .bash_profile if it doesn't exist
+        file:
+          path: /home/circleci/.bash_profile
+          state: touch
+        when: not bash_profile_exists.stat.exists
 
-- name: Add rbenv to PATH
-  lineinfile: 
-    path: /home/circleci/.bash_profile
-    line: 'export PATH="$HOME/.rbenv/bin:$PATH"'
+      - name: Add rbenv to PATH in .bash_profile
+        lineinfile:
+          path: /home/circleci/.bash_profile
+          line: 'export PATH="$HOME/.rbenv/bin:$PATH"'
+        when: bash_profile_exists.stat.exists
 
-- name: eval rbenv init
-  lineinfile: 
-    path: /home/circleci/.bash_profile
-    line: 'eval "$(rbenv init -)"'
+      - name: install rbenv
+        become: yes
+        git:
+          repo: https://github.com/sstephenson/rbenv.git
+          dest: /home/circleci/.rbenv
 
-- name: rbenv setting
-  shell: bash -lc "source ~/.bash_profile"
+      - name: edit permission rbenv
+        become: yes
+        file:
+          path: /home/circleci/.rbenv
+          state: directory
+          owner: ec2-user
+          group: ec2-user
 
-#ruby-buildのインストール 
-- name: install ruby-build
-  git:
-    repo: https://github.com/sstephenson/ruby-build.git
-    dest: /home/circleci/.rbenv/plugins/ruby-build
+      - name: Add rbenv to PATH
+        lineinfile:
+          path: /home/circleci/.bash_profile
+          line: 'export PATH="$HOME/.rbenv/bin:$PATH"'
 
-#ruby install 確認
-- name: check ruby installed
-  stat:
-    path: /home/circleci/.rbenv/shims/ruby
-  register: ruby_installed
+      - name: eval rbenv init
+        lineinfile:
+          path: /home/circleci/.bash_profile
+          line: 'eval "$(rbenv init -)"'
 
-- name: Install dependencies
-  become: true
-  yum:
-    name: "{{ item }}"
-    state: present
-  loop:
-    - git
-    - gcc
-    - bzip2
-    - openssl-devel
-    - libyaml-devel
-    - libffi-devel
-    - readline-devel
-    - zlib-devel
-    - gdbm-devel
-    - ncurses-devel
+      - name: rbenv setting
+        shell: bash -lc "source ~/.bash_profile"
 
-#rubyのインストール
-- name: install ruby
-  become_user: ec2-user
-  shell: bash -lc "rbenv install {{ ruby_version }}"
-  timeout: 6000  # タイムアウトを10分（600秒）に延長
-  when: not ruby_installed.stat.exists
+      - name: install ruby-build
+        git:
+          repo: https://github.com/sstephenson/ruby-build.git
+          dest: /home/circleci/.rbenv/plugins/ruby-build
 
-#rubyを使用可能にする
-- name: set default ruby version rehash
-  become_user: ec2-user
-  shell: bash -lc "rbenv rehash"
+      - name: check ruby installed
+        stat:
+          path: /home/circleci/.rbenv/shims/ruby
+        register: ruby_installed
 
-#インスタンスで使用するバージョンの設定
-- name: set default ruby version
-  become_user: ec2-user
-  shell: bash -lc "rbenv global {{ ruby_version }}"
+      - name: Install dependencies
+        become: true
+        yum:
+          name: "{{ item }}"
+          state: present
+        loop:
+          - git
+          - gcc
+          - bzip2
+          - openssl-devel
+          - libyaml-devel
+          - libffi-devel
+          - readline-devel
+          - zlib-devel
+          - gdbm-devel
+          - ncurses-devel
 
-- name: Install bundler
-  become: true
-  gem:
-    name: bundler
-    state: latest
+      - name: install ruby
+        become_user: ec2-user
+        shell: bash -lc "rbenv install {{ ruby_version }}"
+        timeout: 6000
+        when: not ruby_installed.stat.exists
+
+      - name: set default ruby version rehash
+        become_user: ec2-user
+        shell: bash -lc "rbenv rehash"
+
+      - name: set default ruby version
+        become_user: ec2-user
+        shell: bash -lc "rbenv global {{ ruby_version }}"
+
+      - name: Install bundler
+        become: true
+        gem:
+          name: bundler
+          state: latest
