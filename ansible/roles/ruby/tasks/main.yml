@@ -86,7 +86,7 @@
 #rubyのインストール
 - name: Install Ruby 3.1.2
   become: yes
-  become_user: root
+  become_user: ec2-user
   shell: |
     /home/circleci/.rbenv/bin/rbenv install 3.1.2
     /home/circleci/.rbenv/bin/rbenv global 3.1.2
