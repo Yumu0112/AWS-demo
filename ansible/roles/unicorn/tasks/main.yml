@@ -33,6 +33,8 @@
   shell: bash -lc "gem install bundler -v 1.16.0"
   args:
     chdir: /home/circleci/raisetech-live8-sample-app/
+  environment:
+    PATH: "{{ ansible_env.PATH }}:/home/circleci/raisetech-live8-sample-app/"
 
 - name: bundle install
   shell: bash -lc "bundle install"
