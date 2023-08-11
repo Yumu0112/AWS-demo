@@ -31,6 +31,6 @@
   become: yes
   become_method: sudo
   become_user: ec2-user
-  shell: "/usr/bin/env bash -lc '/home/circleci/.rbenv/shims/bundle install'"
+  shell: "/usr/bin/env bash -lc '/home/ec2-user/.rbenv/shims/bundle install'"
   args:
     chdir: /home/ec2-user/raisetech-live8-sample-app/
