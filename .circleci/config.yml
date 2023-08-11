@@ -71,7 +71,6 @@ jobs:
           name: Move Repository
           command: |
             sudo mkdir /home/ec2-user/
-            sudo chown ec2-user:ec2-user /home/ec2-user/
             sudo chmod -R 755 /home/ec2-user/
             sudo mv /home/circleci/project/ /home/ec2-user/
       - run:
