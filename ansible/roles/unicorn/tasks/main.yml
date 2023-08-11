@@ -22,12 +22,12 @@
 # Rubyのアップグレード
 - name: Upgrade Ruby to the latest version
   become_user: ec2-user
-  ansible.builtin.command: rbenv install $(rbenv install -l | grep -v - | tail -1)
+  ansible.builtin.command: rbenv install `rbenv install -l | grep -v - | tail -1`
   when: not ruby_installed.stat.exists
 
 - name: Set global Ruby version to the latest
   become_user: ec2-user
-  ansible.builtin.command: rbenv global $(rbenv install -l | grep -v - | tail -1)
+  ansible.builtin.command: rbenv global `rbenv install -l | grep -v - | tail -1`
   when: not ruby_installed.stat.exists
 
 - name: Reload rbenv
