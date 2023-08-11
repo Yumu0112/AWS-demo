@@ -103,10 +103,3 @@
   become_user: ec2-user
   shell: bash -lc "rbenv global 3.1.2"
 
-- name: Check Ruby version
-  command: ruby -v
-  register: ruby_version_output
-
-- name: Display Ruby version
-  debug:
-    var: ruby_version_output.stdout_lines

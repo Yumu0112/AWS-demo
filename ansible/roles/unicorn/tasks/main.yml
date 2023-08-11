@@ -19,17 +19,12 @@
     dest: /home/circleci/raisetech-live8-sample-app
   when: not app_installed.stat.exists
 
-- name: Check Ruby version
-  command: ruby -v
-  register: ruby_version_output
-
-- name: Display Ruby version
-  debug:
-    var: ruby_version_output.stdout_lines
-
 - name: Install bundler gem
   become_user: ec2-user
-  ansible.builtin.command: sudo gem install bundler -v 2.4.18
+  ansible.builtin.command: |
+    source /home/circleci/.bash_profile  
+    /home/circleci/.rbenv/bin/rbenv shell 3.1.2  
+    sudo gem install bundler -v 2.4.18
 
 # unicornインストール
 - name: bundle install
