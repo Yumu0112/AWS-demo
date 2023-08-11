@@ -5,7 +5,7 @@
 
 - name: Set directory permissions
   ansible.builtin.file:
-    path: /home/circleci/raisetech-live8-sample-app
+    path: /home/ec2-user/raisetech-live8-sample-app
     state: directory
     owner: ec2-user  # 適切な所有者に変更する
     group: ec2-user  # 適切なグループに変更する
@@ -26,6 +26,14 @@
   shell: bash -lc "gem install bundler -v 1.5.1"
   args:
     chdir: /home/ec2-user/raisetech-live8-sample-app/
+  
+  - name: Database setup for the sample app
+  become: yes
+  become_user: ec2-user
+  shell: "/usr/bin/env bash -lc '/home/ec2-user/.rbenv/shims/bundle exec rake db:setup'"
+  args:
+    chdir: /home/ec2-user/raisetech-live8-sample-app/
+  when: app_installed.stat.exists
   
 - name: bundle install
   become: yes
