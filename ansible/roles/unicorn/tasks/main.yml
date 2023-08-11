@@ -31,8 +31,6 @@
 
 - name: bundle install
   command: |
-    /bin/bash -lc '/home/circleci/.rbenv/rbenv exec bundle install'
-  args:
-    chdir: /home/circleci/raisetech-live8-sample-app/
+    /bin/bash -lc 'cd /home/circleci/raisetech-live8-sample-app/ && /home/circleci/.rbenv/bin/rbenv exec bundle install'
   environment:
     PATH: "/home/circleci/.rbenv/bin:$PATH"
