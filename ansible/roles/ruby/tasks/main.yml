@@ -63,7 +63,7 @@
 #ruby install 確認
 - name: check ruby installed
   stat:
-    path: /home/circleci/.rbenv/shims/ruby
+    path: /home/circleci/.rbenv/bin/
   register: ruby_installed
 
 - name: Install dependencies
