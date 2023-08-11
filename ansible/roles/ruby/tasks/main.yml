@@ -1,29 +1,29 @@
 ---
 - name: Check if directory exists for .bash_profile
   stat:
-    path: /home/circleci
+    path: /home/ec2-user
   register: bash_profile_directory_exists
 
 - name: Create directory for .bash_profile if it doesn't exist
   file:
-    path: /home/circleci
+    path: /home/ec2-user
     state: directory
   when: not bash_profile_directory_exists.stat.exists
 
 - name: Check if .bash_profile exists
   stat:
-    path: /home/circleci/.bash_profile
+    path: /home/ec2-user/.bash_profile
   register: bash_profile_exists
 
 - name: Create .bash_profile if it doesn't exist
   file:
-    path: /home/circleci/.bash_profile
+    path: /home/ec2-user/.bash_profile
     state: touch
   when: not bash_profile_exists.stat.exists
 
 - name: Add rbenv to PATH in .bash_profile
   lineinfile: 
-    path: /home/circleci/.bash_profile
+    path: /home/ec2-user/.bash_profile
     line: 'export PATH="$HOME/.rbenv/bin:$PATH"'
   when: bash_profile_exists.stat.exists
 
@@ -31,12 +31,12 @@
   become: yes
   git: 
     repo: https://github.com/sstephenson/rbenv.git 
-    dest: /home/circleci/.rbenv
+    dest: /home/ec2-user/.rbenv
 
 - name: edit permission rbenv
   become: yes
   file:
-    path: /home/circleci/.rbenv
+    path: /home/ec2-user/.rbenv
     state: directory
     owner: ec2-user
     group: ec2-user
@@ -48,7 +48,7 @@
 
 - name: eval rbenv init
   lineinfile: 
-    path: /home/circleci/.bash_profile
+    path: /home/ec2-user/.bash_profile
     line: 'eval "$(rbenv init -)"'
 
 - name: rbenv setting
@@ -63,7 +63,7 @@
 #ruby install 確認
 - name: check ruby installed
   stat:
-    path: /home/circleci/.rbenv/bin/
+    path: /home/ec2-user/.rbenv/bin/
   register: ruby_installed
 
 - name: Install dependencies
@@ -86,7 +86,7 @@
 #rubyのインストール
 - name: Install Ruby 3.1.2
   become: yes
-  become_user: circleci
+  become_user: ec2-user
   shell: |
     /home/circleci/.rbenv/bin/rbenv install 3.1.2
     /home/circleci/.rbenv/bin/rbenv global 3.1.2

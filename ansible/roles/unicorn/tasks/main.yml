@@ -1,6 +1,6 @@
 - name: Check app installed
   stat:
-    path: /home/circleci/raisetech-live8-sample-app
+    path: /home/ec2-user/raisetech-live8-sample-app
   register: app_installed
 
 - name: Set directory permissions
@@ -20,10 +20,12 @@
   when: not app_installed.stat.exists
 
 - name: bundler install
-  become_user: circleci
+  become: yes
+  become_method: sudo
+  become_user: ec2-user
   shell: bash -lc "gem install bundler -v 1.5.1"
   args:
-    chdir: /home/circleci/raisetech-live8-sample-app/
+    chdir: /home/ec2-user/raisetech-live8-sample-app/
   
 - name: bundle install
   become: yes
@@ -31,4 +33,4 @@
   become_user: ec2-user
   shell: "/usr/bin/env bash -lc '/home/circleci/.rbenv/shims/bundle install'"
   args:
-    chdir: /home/circleci/raisetech-live8-sample-app/
+    chdir: /home/ec2-user/raisetech-live8-sample-app/
