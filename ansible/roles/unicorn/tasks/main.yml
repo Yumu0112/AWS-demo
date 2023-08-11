@@ -21,13 +21,14 @@
 
 
 - name: current directory
-  command: |
-    pwd
+  shell: pwd
+  register: current_dir_output
+  changed_when: false
 
 - name: Display current directory
   debug:
-    var: current_dir.stdout
-
+    var: current_dir_output.stdout
+    
 # unicornインストール
 - name: bundle install
   command: |
