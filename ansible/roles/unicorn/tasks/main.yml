@@ -19,8 +19,8 @@
     dest: /home/circleci/raisetech-live8-sample-app
   when: not app_installed.stat.exists
 
-- name: bundle install
-  shell: bash -lc "gem install bundler"
+- name: bundler install
+  shell: bash -lc "gem install bundler -v 1.5.1"
   args:
     chdir: /home/circleci/raisetech-live8-sample-app/
   
