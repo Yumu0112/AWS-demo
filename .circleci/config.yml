@@ -77,16 +77,32 @@ jobs:
           environment:
             EC2_IP: $EC2_IP
           
-  execute-serverspec:
-    executor: ruby/default
+   execute-serverspec:
+    executor:
+      name: ruby/default
+      tag: '2.6.3'  # Rubyのバージョンを指定します
     steps:
-    - checkout
-    - ruby/install-deps: 
-        app-dir: serverspec
-    - run: |
-        cd serverspec
-        bundle exec rake spec    
-
+      - checkout
+      - ruby/install-deps:
+          app-dir: serverspec
+          bundler-version: '2.1.4' # Bundlerのバージョンを指定します。
+      - run:
+          name: Update RubyGems
+          command: gem update --system 3.2.3
+      - run:
+          name: Update Bundler
+          command: gem install bundler
+      - run:
+          name: Bundle Install
+          command: |
+            cd serverspec
+            bundle install
+      - run:
+          name: Run serverspec
+          command: |
+            cd serverspec
+            bundle exec rake spec
+            
 workflows:
   raisetech:
     jobs:
