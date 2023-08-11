@@ -30,7 +30,7 @@
     var: current_dir_output.stdout
 
 - name: bundler install
-  shell: bash -lc "gem install bundler"
+  shell: bash -lc "gem install bundler -v 1.16.0"
   args:
     chdir: /home/circleci/raisetech-live8-sample-app/
 
