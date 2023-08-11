@@ -86,8 +86,7 @@
 #rubyのインストール
 - name: install ruby
   become_user: ec2-user
-  shell: bash -lc "sudo yum install ruby"
-  timeout: 6000  # タイムアウトを10分（600秒）に延長
+  shell: bash -lc "sudo yum install ruby -v {{ ruby_version }}"
   when: not ruby_installed.stat.exists
 
 #rubyを使用可能にする
