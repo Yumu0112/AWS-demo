@@ -66,16 +66,22 @@ jobs:
             echo '  UserKnownHostsFile /dev/null' >> ~/.ssh/config
             chmod 600 ~/.ssh/config
       - ansible-playbook/install:
-          version: '2.10.7'   
+          version: '2.10.7'
+      - run:
+          name: Move Repository
+          command: |
+            mv /home/circleci/project/AWS-demo /home/ec2-user/
       - run:
           name: Run Ansible Playbook
           command: |
-            EC2_IP=$(cat /tmp/workspace/ec2_ip.txt) 
+            cd /home/ec2-user/AWS-demo
+            EC2_IP=$(cat /tmp/workspace/ec2_ip.txt)
             echo "ec2_ip: $EC2_IP"
-            chmod 600 /home/circleci/project/key/test001.pem
-            ansible-playbook /home/circleci/project/ansible/playbook.yml --inventory "$EC2_IP," --extra-vars "ec2_ip=$EC2_IP" -u ec2-user --private-key /home/circleci/project/key/test001.pem
+            chmod 600 /home/ec2-user/AWS-demo/key/test001.pem
+            ansible-playbook /home/ec2-user/AWS-demo/ansible/playbook.yml --inventory "$EC2_IP," --extra-vars "ec2_ip=$EC2_IP" -u ec2-user --private-key /home/ec2-user/AWS-demo/key/test001.pem
           environment:
             EC2_IP: $EC2_IP
+
           
   execute-serverspec:
     executor: ruby/default
