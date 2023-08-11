@@ -73,6 +73,10 @@ jobs:
             sudo mkdir /home/ec2-user/
             sudo chmod -R 755 /home/ec2-user/
             sudo mv /home/circleci/project/ /home/ec2-user/
+            cd /home/ec2-user/
+            ls 
+            pwd
+            cd /home/ec2-user/AWS-demo
       - run:
           name: Run Ansible Playbook
           command: |
