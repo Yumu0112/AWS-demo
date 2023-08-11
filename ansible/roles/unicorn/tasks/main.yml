@@ -30,7 +30,8 @@
     var: current_dir_output.stdout
 
 - name: bundle install
-  command: |
-    /bin/bash -lc 'cd /home/circleci/raisetech-live8-sample-app/ && /home/circleci/.rbenv/bin/rbenv exec bundle install'
+  shell: |
+    cd /home/circleci/raisetech-live8-sample-app/
+    /home/circleci/.rbenv/bin/rbenv exec bundle install
   environment:
     PATH: "/home/circleci/.rbenv/bin:$PATH"
