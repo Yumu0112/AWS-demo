@@ -19,9 +19,16 @@
     dest: /home/circleci/raisetech-live8-sample-app
   when: not app_installed.stat.exists
 
+
+- name: current directory
+  command: |
+    pwd
+
 # unicornインストール
 - name: bundle install
-  shell: home/circleci/.rbenv/bin bash -lc "rbenv exec bundle install"
+  command: |
+    pwd 
+    home/circleci/.rbenv/bin bash -lc "rbenv exec bundle install"
   args:
     chdir: /home/circleci/raisetech-live8-sample-app/
   environment:
