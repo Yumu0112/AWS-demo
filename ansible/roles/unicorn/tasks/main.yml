@@ -19,6 +19,21 @@
     dest: /home/circleci/raisetech-live8-sample-app
   when: not app_installed.stat.exists
 
+- name: Upgrade Ruby to version 3.1.2
+  become_user: ec2-user
+  ansible.builtin.command: rbenv install 3.1.2
+  when: not ruby_installed.stat.exists
+
+- name: Set global Ruby version to 3.1.2
+  become_user: ec2-user
+  ansible.builtin.command: rbenv global 3.1.2
+  when: not ruby_installed.stat.exists
+
+- name: Reload rbenv
+  become_user: ec2-user
+  ansible.builtin.command: rbenv rehash
+  when: not ruby_installed.stat.exists
+
 - name: Install bundler gem
   become_user: ec2-user
   ansible.builtin.command: sudo gem install bundler -v 2.4.18
