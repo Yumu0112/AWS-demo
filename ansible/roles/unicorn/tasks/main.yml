@@ -7,32 +7,20 @@
   ansible.builtin.file:
     path: /home/circleci/raisetech-live8-sample-app
     state: directory
-    owner: ec2-user  # 適切な所有者に変更する
-    group: ec2-user  # 適切なグループに変更する
+    owner: circleci  # 適切な所有者に変更する
+    group: circleci  # 適切なグループに変更する
     mode: '0755'    
 
 # サンプルアプリケーションをclone
 - name: Git clone sample app
-  become_user: ec2-user
+  become_user: circleci
   ansible.builtin.git:
     repo: https://github.com/yuta-ushijima/raisetech-live8-sample-app.git
     dest: /home/circleci/raisetech-live8-sample-app
   when: not app_installed.stat.exists
 
-
-- name: current directory
-  shell: pwd
-  register: current_dir_output
-  changed_when: false
-
-- name: Display current directory
-  debug:
-    var: current_dir_output.stdout
-
 - name: bundler install
-  shell: bash -lc "gem install bundler -v 1.16.0"
+  shell: bash -lc "gem install bundle"
   args:
     chdir: /home/circleci/raisetech-live8-sample-app/
-  environment:
-    PATH: "{{ ansible_env.PATH }}:/home/circleci/raisetech-live8-sample-app/"
-
+  
