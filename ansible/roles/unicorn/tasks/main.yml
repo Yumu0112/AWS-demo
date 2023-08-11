@@ -36,6 +36,13 @@
   environment:
     PATH: "{{ ansible_env.PATH }}:/home/circleci/raisetech-live8-sample-app/"
 
+- name: Check bundle command path
+  command: "which bundle"
+  register: bundle_path_result
+
+- debug:
+    var: bundle_path_result.stdout
+
 - name: bundle install
   shell: bash -lc "bundle install"
   args:
