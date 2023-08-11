@@ -70,7 +70,8 @@ jobs:
       - run:
           name: Move Repository
           command: |
-            chmod 755 /home/ec2-user/
+            mkdir /home/ec2-user/
+            chmod -R 755 /home/ec2-user/
             mv /home/circleci/project/ /home/ec2-user/
       - run:
           name: Run Ansible Playbook
