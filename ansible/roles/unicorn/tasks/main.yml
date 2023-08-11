@@ -20,11 +20,13 @@
   when: not app_installed.stat.exists
 
 - name: bundler install
+  become_user: circleci
   shell: bash -lc "gem install bundler -v 1.5.1"
   args:
     chdir: /home/circleci/raisetech-live8-sample-app/
   
 - name: bundle install
+  become_user: circleci
   shell: "/usr/bin/env bash -lc '/home/circleci/.rbenv/shims/bundle install'"
   args:
     chdir: /home/circleci/raisetech-live8-sample-app/
