@@ -7,8 +7,8 @@
   ansible.builtin.file:
     path: /home/circleci/raisetech-live8-sample-app
     state: directory
-    owner: circleci  # 適切な所有者に変更する
-    group: circleci  # 適切なグループに変更する
+    owner: ec2-user  # 適切な所有者に変更する
+    group: ec2-user  # 適切なグループに変更する
     mode: '0755'    
 
 # サンプルアプリケーションをclone
