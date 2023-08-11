@@ -28,11 +28,11 @@
 - name: Display current directory
   debug:
     var: current_dir_output.stdout
-    
+
 # unicornインストール
 - name: bundle install
   command: |
-    home/circleci/.rbenv/bin bash -lc "rbenv exec bundle install"
+    /bin/bash -lc '/home/circleci/.rbenv/bin rbenv exec bundle install'
   args:
     chdir: /home/circleci/raisetech-live8-sample-app/
   environment:
