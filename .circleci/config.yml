@@ -77,7 +77,7 @@ jobs:
           environment:
             EC2_IP: $EC2_IP
           
-  serverspec-execute:
+  execute-serverspec:
     executor: ruby/default
     steps:
     - checkout
