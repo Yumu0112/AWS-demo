@@ -86,7 +86,7 @@
 #rubyのインストール
 - name: install ruby
   become_user: ec2-user
-  shell: bash -lc "sudo yum install ruby -v {{ ruby_version }}"
+  shell: bash -lc "sudo yum install ruby -v 3.1.2"
   when: not ruby_installed.stat.exists
 
 #rubyを使用可能にする
@@ -97,4 +97,12 @@
 #インスタンスで使用するバージョンの設定
 - name: set default ruby version
   become_user: ec2-user
-  shell: bash -lc "rbenv global {{ ruby_version }}"
+  shell: bash -lc "rbenv global 3.1.2"
+
+- name: Check Ruby version
+  command: ruby -v
+  register: ruby_version_output
+
+- name: Display Ruby version
+  debug:
+    var: ruby_version_output.stdout_lines
