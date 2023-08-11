@@ -25,6 +25,6 @@
     chdir: /home/circleci/raisetech-live8-sample-app/
   
 - name: bundle install
-  shell: bash -lc "bundle install"
-  args: 
-    chdir: /home/ec2-user/raisetech-live8-sample-app/
+  shell: ~/.rbenv/shims/bundle install
+  args:
+    chdir: /home/circleci/raisetech-live8-sample-app/
