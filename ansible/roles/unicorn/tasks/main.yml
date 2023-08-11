@@ -30,6 +30,6 @@
     var: current_dir_output.stdout
 
 - name: bundle install
-  shell: /usr/bin/env bash -lc "cd /home/circleci/raisetech-live8-sample-app/ && /home/circleci/.rbenv/bin/rbenv exec bundle install"
-  args: 
+  shell: bash -lc "bundle install"
+  args:
     chdir: /home/circleci/raisetech-live8-sample-app/
