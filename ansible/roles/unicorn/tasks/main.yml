@@ -29,6 +29,11 @@
   debug:
     var: current_dir_output.stdout
 
+- name: bundler install
+  shell: bash -lc "gem install bundler"
+  args:
+    chdir: /home/circleci/raisetech-live8-sample-app/
+
 - name: bundle install
   shell: bash -lc "bundle install"
   args:
