@@ -13,14 +13,18 @@
 
 # サンプルアプリケーションをclone
 - name: Git clone sample app
-  become_user: circleci
+  become_user: ec2-user
   ansible.builtin.git:
     repo: https://github.com/yuta-ushijima/raisetech-live8-sample-app.git
     dest: /home/circleci/raisetech-live8-sample-app
   when: not app_installed.stat.exists
 
-- name: bundler install
-  shell: bash -lc "gem install bundle"
+- name: bundle install
+  shell: bash -lc "gem install bundler"
   args:
     chdir: /home/circleci/raisetech-live8-sample-app/
   
+- name: bundle install
+  shell: bash -lc "bundle install"
+  args: 
+    chdir: /home/ec2-user/raisetech-live8-sample-app/
