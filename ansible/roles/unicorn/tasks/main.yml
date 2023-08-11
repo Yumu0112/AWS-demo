@@ -24,6 +24,13 @@
     path: /home/ec2-user/raisetech-live8-sample-app/Gemfile.lock
     state: absent
 
+- name: Install MySQL development library
+  become: yes
+  become_method: sudo
+  yum:
+    name: mysql-devel
+    state: present
+
 - name: bundler install
   become: yes
   become_method: sudo
