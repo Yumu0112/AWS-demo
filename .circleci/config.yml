@@ -73,6 +73,7 @@ jobs:
             cd /home/circleci/project/
             ls
             sudo mkdir /home/ec2-user/
+            sudo chown ec2-user:ec2-user /home/ec2-user/
             sudo chmod -R 755 /home/ec2-user/
             sudo mv /home/circleci/project/ /home/ec2-user/
             cd /home/ec2-user/
@@ -86,7 +87,7 @@ jobs:
             cd /home/ec2-user/project
             EC2_IP=$(cat /tmp/workspace/ec2_ip.txt)
             echo "ec2_ip: $EC2_IP"
-            chmod 600 /home/ec2-user/AWS-demo/key/test001.pem
+            chmod 600 /home/ec2-user/project/key/test001.pem
             ansible-playbook /home/ec2-user/project/ansible/playbook.yml --inventory "$EC2_IP," --extra-vars "ec2_ip=$EC2_IP" -u ec2-user --private-key /home/ec2-user/project/key/test001.pem
           environment:
             EC2_IP: $EC2_IP
