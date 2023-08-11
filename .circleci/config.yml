@@ -70,7 +70,7 @@ jobs:
       - run:
           name: Move Repository
           command: |
-            mv /home/circleci/project/AWS-demo /home/ec2-user/
+            mv /home/circleci/project/ /home/ec2-user/
       - run:
           name: Run Ansible Playbook
           command: |
