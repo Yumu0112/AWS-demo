@@ -13,6 +13,8 @@
 
 # サンプルアプリケーションをclone
 - name: Git clone sample app
+  become: yes
+  become_method: sudo
   become_user: ec2-user
   ansible.builtin.git:
     repo: https://github.com/yuta-ushijima/raisetech-live8-sample-app.git
