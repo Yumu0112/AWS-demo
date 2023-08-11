@@ -88,9 +88,9 @@
   become: yes
   become_user: root
   shell: |
-    $PATH/rbenv install 3.1.2
-    $PATH/rbenv global 3.1.2
-    $PATH/rbenv rehash
+    $HOME/.rbenv/bin/rbenv install 3.1.2
+    $HOME/.rbenv/bin/rbenv global 3.1.2
+    $HOME/.rbenv/bin/rbenv rehash
   when: not ruby_installed.stat.exists
 
 #rubyを使用可能にする
