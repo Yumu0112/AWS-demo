@@ -19,6 +19,9 @@
     dest: /home/circleci/raisetech-live8-sample-app
   when: not app_installed.stat.exists
 
+- name: Install bundler gem
+  become: yes
+  ansible.builtin.command: sudo gem install bundler
 
 # unicornインストール
 - name: bundle install
