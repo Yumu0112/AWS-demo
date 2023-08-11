@@ -24,10 +24,13 @@
   command: |
     pwd
 
+- name: Display current directory
+  debug:
+    var: current_dir.stdout
+
 # unicornインストール
 - name: bundle install
   command: |
-    pwd 
     home/circleci/.rbenv/bin bash -lc "rbenv exec bundle install"
   args:
     chdir: /home/circleci/raisetech-live8-sample-app/
