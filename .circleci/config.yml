@@ -70,17 +70,10 @@ jobs:
       - run:
           name: Move Repository
           command: |
-            cd /home/circleci/project/
-            ls
             sudo mkdir /home/ec2-user/
             sudo chown ec2-user:ec2-user /home/ec2-user/
             sudo chmod -R 755 /home/ec2-user/
             sudo mv /home/circleci/project/ /home/ec2-user/
-            cd /home/ec2-user/
-            ls 
-            pwd
-            cd /home/ec2-user/project
-            ls
       - run:
           name: Run Ansible Playbook
           command: |
