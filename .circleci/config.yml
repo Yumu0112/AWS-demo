@@ -70,7 +70,9 @@ jobs:
       - run:
           name: Move Repository
           command: |
-            sudo mkdir /home/ec2-user/AWS-demo
+            cd /home/circleci/project/
+            ls
+            sudo mkdir /home/ec2-user/AWS-demo/
             sudo chmod -R 755 /home/ec2-user/
             sudo mv /home/circleci/project/ /home/ec2-user/AWS-demo/
             cd /home/ec2-user/
