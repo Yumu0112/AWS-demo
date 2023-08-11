@@ -21,6 +21,8 @@
 
 # unicornインストール
 - name: bundle install
-  shell: bash -lc "bundle install"
-  args: 
+  shell: rbenv exec bundle install
+  args:
     chdir: /home/circleci/raisetech-live8-sample-app/
+  environment:
+    PATH: "/home/circleci/.rbenv/bin:$PATH"
