@@ -27,7 +27,7 @@
   args:
     chdir: /home/ec2-user/raisetech-live8-sample-app/
   
-  - name: Database setup for the sample app
+- name: Database setup for the sample app
   become: yes
   become_user: ec2-user
   shell: "/usr/bin/env bash -lc '/home/ec2-user/.rbenv/shims/bundle exec rake db:setup'"
