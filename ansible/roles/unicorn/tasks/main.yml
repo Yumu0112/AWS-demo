@@ -14,6 +14,6 @@
 
 # unicornインストール
 - name: bundle install
-  shell: bash -lc "bundle install"
+  shell: bash -lc "sudo yum install bundle"
   args: 
     chdir: /home/circleci/raisetech-live8-sample-app/

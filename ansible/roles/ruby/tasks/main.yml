@@ -1,3 +1,4 @@
+---
 - name: Check if directory exists for .bash_profile
   stat:
     path: /home/circleci
@@ -59,6 +60,12 @@
     repo: https://github.com/sstephenson/ruby-build.git
     dest: /home/circleci/.rbenv/plugins/ruby-build
 
+#ruby install 確認
+- name: check ruby installed
+  stat:
+    path: /home/circleci/.rbenv/shims/ruby
+  register: ruby_installed
+
 - name: Install dependencies
   become: true
   yum:
@@ -76,21 +83,12 @@
     - gdbm-devel
     - ncurses-devel
 
-- name: Install ruby-build asynchronously
-  async: 600
-  poll: 0
+#rubyのインストール
+- name: install ruby
   become_user: ec2-user
-  shell: bash -lc "rbenv install {{ ruby_version }}"
-  register: rbenv_install_result
-  ignore_errors: true
-
-- name: Wait for ruby-build to complete
-  async_status:
-    jid: "{{ rbenv_install_result.ansible_job_id }}"
-  register: rbenv_install_status
-  until: rbenv_install_status.finished
-  retries: 360
-  delay: 10
+  shell: bash -lc "sudo yum install ruby"
+  timeout: 6000  # タイムアウトを10分（600秒）に延長
+  when: not ruby_installed.stat.exists
 
 #rubyを使用可能にする
 - name: set default ruby version rehash
@@ -101,9 +99,3 @@
 - name: set default ruby version
   become_user: ec2-user
   shell: bash -lc "rbenv global {{ ruby_version }}"
-
-- name: Install bundler
-  become: true
-  gem:
-    name: bundler
-    state: latest
