@@ -20,8 +20,8 @@
   when: not app_installed.stat.exists
 
 - name: Install bundler gem
-  become: yes
-  ansible.builtin.command: sudo gem install bundler
+  become_user: ec2-user
+  ansible.builtin.command: sudo gem install bundler -v 2.1.4
 
 # unicornインストール
 - name: bundle install
