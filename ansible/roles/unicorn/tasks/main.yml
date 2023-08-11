@@ -23,7 +23,7 @@
   become: yes
   become_method: sudo
   become_user: ec2-user
-  shell: bash -lc "gem install bundler -v 1.5.1"
+  shell: bash -lc "gem install bundler"
   args:
     chdir: /home/ec2-user/raisetech-live8-sample-app/
   
