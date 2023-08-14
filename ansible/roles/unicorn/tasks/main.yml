@@ -19,18 +19,6 @@
     dest: /home/circleci/raisetech-live8-sample-app
   when: not app_installed.stat.exists
 
-- name: Delete Gemfile.lock
-  ansible.builtin.file:
-    path: /home/ec2-user/raisetech-live8-sample-app/Gemfile.lock
-    state: absent
-
-- name: Install MySQL development library
-  become: yes
-  become_method: sudo
-  yum:
-    name: mysql-devel
-    state: present
-
 - name: bundler install
   become: yes
   become_method: sudo
@@ -38,6 +26,13 @@
   shell: bash -lc "gem install bundler"
   args:
     chdir: /home/ec2-user/raisetech-live8-sample-app/
+
+- name: Install shared-mime-info
+  become: yes
+  become_method: sudo
+  yum:
+    name: shared-mime-info
+    state: present
   
 - name: bundle install
   become: yes
