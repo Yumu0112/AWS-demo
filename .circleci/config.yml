@@ -94,6 +94,13 @@ jobs:
       name: ruby/default
     steps:
       - checkout
+      - run:
+        name: Update SSH config
+        command: |
+          echo 'Host *' >> ~/.ssh/config
+          echo '  StrictHostKeyChecking no' >> ~/.ssh/config
+          echo '  UserKnownHostsFile /dev/null' >> ~/.ssh/config
+          chmod 600 ~/.ssh/config
       - attach_workspace:
           at: /tmp/workspace
       - ruby/install-deps:
@@ -120,6 +127,7 @@ jobs:
           name: Run serverspec
           command: |
             cd /tmp/workspace/project/serverspec
+            sudo chmod 600 ../key/test001.pem
             bundle exec rake spec    
 
 workflows:
