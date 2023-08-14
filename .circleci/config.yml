@@ -85,7 +85,7 @@ jobs:
             EC2_IP: $EC2_IP
 
           
-   execute-serverspec:
+  execute-serverspec:
     executor:
       name: ruby/default
     steps:
