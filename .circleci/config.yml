@@ -108,7 +108,7 @@ jobs:
       - run:
           name: Bundle Install
           command: |
-            cd serverspec
+            cd /tmp/workspace/project/serverspec
             bundle install
       # - run:
       #     name: Test SSH Connection
