@@ -84,7 +84,9 @@ jobs:
           environment:
             EC2_IP: $EC2_IP
       - persist_to_workspace:
-          root: /home/ec2-user/project
+          root: /home/ec2-user/
+          paths:
+            - project/
 
           
   execute-serverspec:
