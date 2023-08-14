@@ -126,6 +126,8 @@ jobs:
       - run:
           name: Run serverspec
           command: |
+            pwd
+            ls
             ssh -i /tmp/workspace/project/key/test001.pem -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ec2-user@44.201.33.198 "ls && cd ../../tmp/workspace/project/serverspec/ && bundle exec rake spec"   
 
 workflows:
