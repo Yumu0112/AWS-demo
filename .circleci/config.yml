@@ -124,6 +124,7 @@ jobs:
       - run:
           name: Add SSH Key to Authorized Keys
           command: |
+            sudo chmod 600 /home/circleci/project/key/test001.pem
             cd ~/.ssh
             ssh-add /home/circleci/project/key/test001.pem
       - run:
