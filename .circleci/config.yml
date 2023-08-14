@@ -126,6 +126,7 @@ jobs:
       - run:
           name: Run serverspec
           command: |
+            sudo chmod 600 /home/circleci/project/key/test001.pem
             pwd
             ls
             cd ../../
