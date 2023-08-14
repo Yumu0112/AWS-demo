@@ -83,6 +83,8 @@ jobs:
             ansible-playbook /home/ec2-user/project/ansible/playbook.yml --inventory "$EC2_IP," --extra-vars "ec2_ip=$EC2_IP" -u ec2-user --private-key /home/ec2-user/project/key/test001.pem
           environment:
             EC2_IP: $EC2_IP
+      - persist_to_workspace:
+          root: /home/ec2-user/project
 
           
   execute-serverspec:
