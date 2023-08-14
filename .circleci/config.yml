@@ -125,7 +125,7 @@ jobs:
           name: Add SSH Key to Authorized Keys
           command: |
             cd ~/.ssh
-            .ssh $ ssh-add /home/circleci/project/key/test001.pem
+            ssh-add /home/circleci/project/key/test001.pem
       - run:
           name: Run serverspec
           command: |
