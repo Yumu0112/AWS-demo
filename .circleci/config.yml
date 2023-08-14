@@ -94,6 +94,8 @@ jobs:
       name: ruby/default
     steps:
       - checkout
+      - attach_workspace:
+          at: /tmp/workspace
       - ruby/install-deps:
           app-dir: serverspec
           bundler-version: '2.1.4'
