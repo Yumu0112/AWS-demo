@@ -95,7 +95,7 @@ jobs:
     steps:
       - checkout
       - attach_workspace:
-          at: /tmp/workspace
+          at: /home/ec2-user/
       - ruby/install-deps:
           app-dir: serverspec
           bundler-version: '2.1.4'
