@@ -117,6 +117,8 @@ jobs:
             ls /tmp/workspace 
             cd ../../
             ls
+            cd ec2-user
+            ls 
             chmod 600 /home/ec2-user/project/key/test001.pem
             ssh -o StrictHostKeyChecking=no -i /home/ec2-user/project/key/test001.pem ec2-user@44.201.33.198 
       - run:
