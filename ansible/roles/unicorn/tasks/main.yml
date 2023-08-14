@@ -27,11 +27,11 @@
   args:
     chdir: /home/ec2-user/raisetech-live8-sample-app/
 
-- name: Install shared-mime-info
+- name: Install g++
   become: yes
   become_method: sudo
   yum:
-    name: shared-mime-info
+    name: gcc-c++
     state: present
   
 - name: bundle install
