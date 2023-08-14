@@ -111,8 +111,8 @@ jobs:
       - run:
           name: Test SSH Connection
           command: |
-            pwd 
-            cd ../../ec2-user/
+            pwd
+            ls /tmp/workspace 
             chmod 600 /home/ec2-user/project/key/test001.pem
             ssh -o StrictHostKeyChecking=no -i /home/ec2-user/project/key/test001.pem ec2-user@44.201.33.198 
       - run:
