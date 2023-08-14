@@ -126,9 +126,7 @@ jobs:
       - run:
           name: Run serverspec
           command: |
-            cd /tmp/workspace/project/serverspec
-            sudo chmod 600 ../key/test001.pem
-            bundle exec rake spec    
+            ssh -i /path/to/your/private/key.pem -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ec2-user@44.201.33.198 "cd /tmp/workspace/project/serverspec && bundle exec rake spec"   
 
 workflows:
   raisetech:
