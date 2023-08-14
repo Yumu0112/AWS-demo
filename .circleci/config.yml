@@ -95,12 +95,12 @@ jobs:
     steps:
       - checkout
       - run:
-        name: Update SSH config
-        command: |
-          echo 'Host *' >> ~/.ssh/config
-          echo '  StrictHostKeyChecking no' >> ~/.ssh/config
-          echo '  UserKnownHostsFile /dev/null' >> ~/.ssh/config
-          chmod 600 ~/.ssh/config
+          name: Update SSH config
+          command: |
+            echo 'Host *' >> ~/.ssh/config
+            echo '  StrictHostKeyChecking no' >> ~/.ssh/config
+            echo '  UserKnownHostsFile /dev/null' >> ~/.ssh/config
+            chmod 600 ~/.ssh/config
       - attach_workspace:
           at: /tmp/workspace
       - ruby/install-deps:
