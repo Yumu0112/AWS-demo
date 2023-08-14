@@ -128,6 +128,8 @@ jobs:
           command: |
             pwd
             ls
+            cd ../../
+            ls
             ssh -i /home/circleci/project/key/test001.pem -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ec2-user@44.201.33.198 "ls && cd /home/circleci/project/serverspec/ && bundle exec rake spec"   
 
 workflows:
