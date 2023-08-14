@@ -119,7 +119,7 @@ jobs:
             ls
             cd /tmp/workspace/project/
             ls 
-            chmod 600 /tmp/workspace/project/key/test001.pem
+            sudo chmod 600 /tmp/workspace/project/key/test001.pem
             ssh -o StrictHostKeyChecking=no -i /tmp/workspace/project/key/test001.pem ec2-user@44.201.33.198 
       - run:
           name: Run serverspec
