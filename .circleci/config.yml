@@ -110,21 +110,16 @@ jobs:
           command: |
             cd serverspec
             bundle install
-      - run:
-          name: Test SSH Connection
-          command: |
-            pwd
-            ls /tmp/workspace 
-            cd ../../
-            ls
-            cd /tmp/workspace/project/
-            ls 
-            sudo chmod 600 /tmp/workspace/project/key/test001.pem
-            ssh -o StrictHostKeyChecking=no -i /tmp/workspace/project/key/test001.pem ec2-user@44.201.33.198 
+      # - run:
+      #     name: Test SSH Connection
+      #     command: |
+      #       cd /tmp/workspace/project/
+      #       sudo chmod 600 /tmp/workspace/project/key/test001.pem
+      #       ssh -o StrictHostKeyChecking=no -i /tmp/workspace/project/key/test001.pem ec2-user@44.201.33.198 
       - run:
           name: Run serverspec
           command: |
-            cd serverspec
+            cd /tmp/workspace/project/serverspec
             bundle exec rake spec    
 
 workflows:
