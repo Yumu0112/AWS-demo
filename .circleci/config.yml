@@ -127,11 +127,7 @@ jobs:
           name: Run serverspec
           command: |
             sudo chmod 600 /home/circleci/project/key/test001.pem
-            pwd
-            ls
-            cd ../../
-            ls
-            ssh -i /home/circleci/project/key/test001.pem -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ec2-user@44.201.33.198 "ls && cd /home/circleci/project/serverspec/ && bundle exec rake spec"   
+            ssh -i /home/circleci/project/key/test001.pem -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ec2-user@44.201.33.198 "cd /home/circleci/project/serverspec/ && bundle exec rake spec"   
 
 workflows:
   raisetech:
