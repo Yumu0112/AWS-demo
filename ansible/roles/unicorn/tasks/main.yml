@@ -1,0 +1,43 @@
+- name: Check app installed
+  stat:
+    path: /home/ec2-user/raisetech-live8-sample-app
+  register: app_installed
+
+- name: Set directory permissions
+  ansible.builtin.file:
+    path: /home/ec2-user/raisetech-live8-sample-app
+    state: directory
+    owner: ec2-user  # 適切な所有者に変更する
+    group: ec2-user  # 適切なグループに変更する
+    mode: '0755'    
+
+# サンプルアプリケーションをclone
+- name: Git clone sample app
+  become_user: ec2-user
+  ansible.builtin.git:
+    repo: https://github.com/yuta-ushijima/raisetech-live8-sample-app.git
+    dest: /home/circleci/raisetech-live8-sample-app
+  when: not app_installed.stat.exists
+
+- name: bundler install
+  become: yes
+  become_method: sudo
+  become_user: ec2-user
+  shell: bash -lc "gem install bundler"
+  args:
+    chdir: /home/ec2-user/raisetech-live8-sample-app/
+
+- name: Install g++
+  become: yes
+  become_method: sudo
+  yum:
+    name: gcc-c++
+    state: present
+  
+- name: bundle install
+  become: yes
+  become_method: sudo
+  become_user: ec2-user
+  shell: "/usr/bin/env bash -lc '/home/ec2-user/.rbenv/shims/bundle install'"
+  args:
+    chdir: /home/ec2-user/raisetech-live8-sample-app/

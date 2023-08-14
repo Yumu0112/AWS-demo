@@ -1,6 +1,10 @@
 version: 2.1
 orbs:
+  ansible-playbook: orbss/ansible-playbook@0.0.5
   python: circleci/python@2.0.3
+  aws-cli: circleci/aws-cli@3.1.4
+  ruby: circleci/ruby@2.0.1
+  
 jobs:
   cfn-lint:
     executor: python/default
@@ -12,7 +16,133 @@ jobs:
           command: |
             cfn-lint -i W3002 -t cloudformation/*.yml
 
+  execute-CloudFormation:
+    executor: aws-cli/default
+    steps:
+      - checkout
+      - aws-cli/setup:
+          aws-access-key-id: AWS_ACCESS_KEY_ID
+          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
+          aws-region: AWS_DEFAULT_REGION
+      - run:
+          name: deploy Cloudformation
+          command: |
+            set -x
+            aws cloudformation deploy --template cloudformation/vpc_test.yml --stack-name vpc
+            aws cloudformation deploy --template cloudformation/ec2_test.yml --stack-name ec2 --capabilities CAPABILITY_NAMED_IAM
+            aws cloudformation deploy --template cloudformation/rds_test.yml --stack-name rds
+            aws cloudformation deploy --template cloudformation/elb_test.yml --stack-name elb
+            aws cloudformation deploy --template cloudformation/s3_test.yml --stack-name s3
+      - run:
+          name: Get EC2 Instance IP
+          command: |
+            export EC2_IP=$(aws cloudformation describe-stacks --stack-name ec2 --query 'Stacks[0].Outputs[?OutputKey==`EC2InstanceIP`].OutputValue' --output text)
+            echo $EC2_IP > ec2_ip.txt
+            echo "EC2_IP: $EC2_IP"
+      - persist_to_workspace:
+          root: .
+          paths:
+            - ec2_ip.txt
+
+  execute-Ansible:
+    executor: ansible-playbook/default
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Use EC2 Instance IP
+          command: |
+            EC2_IP=$(cat /tmp/workspace/ec2_ip.txt) 
+            echo "EC2_IP: $EC2_IP"
+      - add_ssh_keys:
+          fingerprints:
+            - 28:b4:54:3b:dd:c0:f9:dd:0d:a8:99:bc:75:02:73:5d
+      - run:
+          name: Update SSH config
+          command: |
+            echo 'Host *' >> ~/.ssh/config
+            echo '  StrictHostKeyChecking no' >> ~/.ssh/config
+            echo '  UserKnownHostsFile /dev/null' >> ~/.ssh/config
+            chmod 600 ~/.ssh/config
+      - ansible-playbook/install:
+          version: '2.10.7'
+      - run:
+          name: Move Repository
+          command: |
+            sudo mkdir /home/ec2-user/
+            sudo chmod -R 755 /home/ec2-user/
+            sudo mv /home/circleci/project/ /home/ec2-user/
+      - run:
+          name: Run Ansible Playbook
+          command: |
+            cd /home/ec2-user/project
+            EC2_IP=$(cat /tmp/workspace/ec2_ip.txt)
+            echo "ec2_ip: $EC2_IP"
+            chmod 600 /home/ec2-user/project/key/test001.pem
+            ansible-playbook /home/ec2-user/project/ansible/playbook.yml --inventory "$EC2_IP," --extra-vars "ec2_ip=$EC2_IP" -u ec2-user --private-key /home/ec2-user/project/key/test001.pem
+          environment:
+            EC2_IP: $EC2_IP
+      - persist_to_workspace:
+          root: /home/ec2-user/
+          paths:
+            - project/
+
+          
+  execute-serverspec:
+    executor:
+      name: ruby/default
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /tmp/workspace
+      - ruby/install-deps:
+          app-dir: serverspec
+          bundler-version: '2.1.4'
+      - run:
+          name: Update RubyGems
+          command: gem update --system 3.2.3
+      - run:
+          name: Update Bundler
+          command: gem install bundler
+      - run:
+          name: Bundle Install
+          command: |
+            cd /home/circleci/project/serverspec
+            bundle install
+      # - run:
+      #     name: Test SSH Connection
+      #     command: |
+      #       cd /tmp/workspace/project/
+      #       sudo chmod 600 /tmp/workspace/project/key/test001.pem
+      #       ssh -o StrictHostKeyChecking=no -i /tmp/workspace/project/key/test001.pem ec2-user@44.201.33.198 
+      # - run:
+      #     name: Run serverspec
+      #     command: |
+      #       sudo chmod 600 /home/circleci/project/key/test001.pem
+      #       ssh -i /home/circleci/project/key/test001.pem -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ec2-user@44.201.33.198 "cd /home/circleci/project/serverspec/ && bundle exec rake spec"   
+      - run:
+          name: Add SSH Key to Authorized Keys
+          command: |
+            sudo chmod 600 /home/circleci/project/key/test001.pem
+            cd ~/.ssh
+            ssh-add /home/circleci/project/key/test001.pem
+      - run:
+          name: Run serverspec
+          command: |
+            cd /home/circleci/project/serverspec
+            bundle exec rake spec
+         
 workflows:
   raisetech:
     jobs:
       - cfn-lint
+      - execute-CloudFormation:
+          requires:
+            - cfn-lint        
+      - execute-Ansible:
+          requires:
+            - execute-CloudFormation
+      - execute-serverspec:
+          requires:
+            - execute-Ansible
