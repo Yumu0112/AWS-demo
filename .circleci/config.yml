@@ -115,7 +115,7 @@ jobs:
       - run:
           name: Bundle Install
           command: |
-            cd /tmp/workspace/project/serverspec
+            cd /home/circleci/project/serverspec
             bundle install
       # - run:
       #     name: Test SSH Connection
@@ -128,7 +128,7 @@ jobs:
           command: |
             pwd
             ls
-            ssh -i /tmp/workspace/project/key/test001.pem -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ec2-user@44.201.33.198 "ls && cd ../../tmp/workspace/project/serverspec/ && bundle exec rake spec"   
+            ssh -i /home/circleci/project/key/test001.pem -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ec2-user@44.201.33.198 "ls && cd /home/circleci/project/serverspec/ && bundle exec rake spec"   
 
 workflows:
   raisetech:
