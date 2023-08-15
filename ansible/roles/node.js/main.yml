@@ -1,0 +1,76 @@
+- name: Update yum cache
+  yum:
+    name: "*"
+    state: latest
+  become: true
+
+- name: Install prerequisites
+  yum:
+    name: "{{ item }}"
+    state: present
+  become: true
+  loop:
+    - gcc-c++
+    - glibc-headers
+    - openssl-devel
+    - readline
+    - libyaml-devel
+    - readline-devel
+    - zlib
+    - zlib-devel
+    - libffi-devel
+    - libxml2
+    - libxslt
+    - libxml2-devel
+    - libxslt-devel
+    - sqlite-devel
+    - libpng-devel
+    - libjpeg-devel
+    - libtiff-devel
+    - gcc
+    - mysql-devel
+    - patch
+    - libicu-devel
+    - ImageMagick
+    - ImageMagick-devel
+    - libcurl
+    - libcurl-devel
+    - curl
+
+- name: Download and install Node.js
+  get_url:
+    url: "https://nodejs.org/dist/v17.9.1/node-v17.9.1-linux-x64.tar.gz"
+    dest: "/tmp/node-v17.9.1-linux-x64.tar.gz"
+  become: true
+
+- name: Extract Node.js
+  unarchive:
+    src: "/tmp/node-v17.9.1-linux-x64.tar.gz"
+    dest: "/opt"
+    remote_src: yes
+    creates: "/opt/node-v17.9.1-linux-x64"
+  become: true
+
+- name: Create symbolic links for Node.js
+  file:
+    src: "/opt/node-v17.9.1-linux-x64"
+    dest: "/opt/node"
+    state: link
+  become: true
+
+- name: Add Node.js to PATH
+  lineinfile:
+    path: "/etc/profile.d/node.sh"
+    line: 'export PATH="/opt/node/bin:$PATH"'
+    create: yes
+  become: true
+
+- name: Install Yarn
+  npm:
+    name: yarn
+    version: 1.22.19
+    state: present
+    global: yes
+  become: true
+  environment:
+    PATH: "/opt/node/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"

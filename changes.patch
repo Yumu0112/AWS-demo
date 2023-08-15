@@ -1,0 +1,825 @@
+diff --git a/.circleci/config.yml b/.circleci/config.yml
+index 7bdd015..356b70e 100644
+--- a/.circleci/config.yml
++++ b/.circleci/config.yml
+@@ -1,6 +1,10 @@
+ version: 2.1
+ orbs:
++  ansible-playbook: orbss/ansible-playbook@0.0.5
+   python: circleci/python@2.0.3
++  aws-cli: circleci/aws-cli@3.1.4
++  ruby: circleci/ruby@2.0.1
++  
+ jobs:
+   cfn-lint:
+     executor: python/default
+@@ -12,7 +16,133 @@ jobs:
+           command: |
+             cfn-lint -i W3002 -t cloudformation/*.yml
+ 
++  execute-CloudFormation:
++    executor: aws-cli/default
++    steps:
++      - checkout
++      - aws-cli/setup:
++          aws-access-key-id: AWS_ACCESS_KEY_ID
++          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
++          aws-region: AWS_DEFAULT_REGION
++      - run:
++          name: deploy Cloudformation
++          command: |
++            set -x
++            aws cloudformation deploy --template cloudformation/vpc_test.yml --stack-name vpc
++            aws cloudformation deploy --template cloudformation/ec2_test.yml --stack-name ec2 --capabilities CAPABILITY_NAMED_IAM
++            aws cloudformation deploy --template cloudformation/rds_test.yml --stack-name rds
++            aws cloudformation deploy --template cloudformation/elb_test.yml --stack-name elb
++            aws cloudformation deploy --template cloudformation/s3_test.yml --stack-name s3
++      - run:
++          name: Get EC2 Instance IP
++          command: |
++            export EC2_IP=$(aws cloudformation describe-stacks --stack-name ec2 --query 'Stacks[0].Outputs[?OutputKey==`EC2InstanceIP`].OutputValue' --output text)
++            echo $EC2_IP > ec2_ip.txt
++            echo "EC2_IP: $EC2_IP"
++      - persist_to_workspace:
++          root: .
++          paths:
++            - ec2_ip.txt
++
++  execute-Ansible:
++    executor: ansible-playbook/default
++    steps:
++      - checkout
++      - attach_workspace:
++          at: /tmp/workspace
++      - run:
++          name: Use EC2 Instance IP
++          command: |
++            EC2_IP=$(cat /tmp/workspace/ec2_ip.txt) 
++            echo "EC2_IP: $EC2_IP"
++      - add_ssh_keys:
++          fingerprints:
++            - 28:b4:54:3b:dd:c0:f9:dd:0d:a8:99:bc:75:02:73:5d
++      - run:
++          name: Update SSH config
++          command: |
++            echo 'Host *' >> ~/.ssh/config
++            echo '  StrictHostKeyChecking no' >> ~/.ssh/config
++            echo '  UserKnownHostsFile /dev/null' >> ~/.ssh/config
++            chmod 600 ~/.ssh/config
++      - ansible-playbook/install:
++          version: '2.10.7'
++      - run:
++          name: Move Repository
++          command: |
++            sudo mkdir /home/ec2-user/
++            sudo chmod -R 755 /home/ec2-user/
++            sudo mv /home/circleci/project/ /home/ec2-user/
++      - run:
++          name: Run Ansible Playbook
++          command: |
++            cd /home/ec2-user/project
++            EC2_IP=$(cat /tmp/workspace/ec2_ip.txt)
++            echo "ec2_ip: $EC2_IP"
++            chmod 600 /home/ec2-user/project/key/test001.pem
++            ansible-playbook /home/ec2-user/project/ansible/playbook.yml --inventory "$EC2_IP," --extra-vars "ec2_ip=$EC2_IP" -u ec2-user --private-key /home/ec2-user/project/key/test001.pem
++          environment:
++            EC2_IP: $EC2_IP
++      - persist_to_workspace:
++          root: /home/ec2-user/
++          paths:
++            - project/
++
++          
++  execute-serverspec:
++    executor:
++      name: ruby/default
++    steps:
++      - checkout
++      - attach_workspace:
++          at: /tmp/workspace
++      - ruby/install-deps:
++          app-dir: serverspec
++          bundler-version: '2.1.4'
++      - run:
++          name: Update RubyGems
++          command: gem update --system 3.2.3
++      - run:
++          name: Update Bundler
++          command: gem install bundler
++      - run:
++          name: Bundle Install
++          command: |
++            cd /home/circleci/project/serverspec
++            bundle install
++      # - run:
++      #     name: Test SSH Connection
++      #     command: |
++      #       cd /tmp/workspace/project/
++      #       sudo chmod 600 /tmp/workspace/project/key/test001.pem
++      #       ssh -o StrictHostKeyChecking=no -i /tmp/workspace/project/key/test001.pem ec2-user@44.201.33.198 
++      # - run:
++      #     name: Run serverspec
++      #     command: |
++      #       sudo chmod 600 /home/circleci/project/key/test001.pem
++      #       ssh -i /home/circleci/project/key/test001.pem -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ec2-user@44.201.33.198 "cd /home/circleci/project/serverspec/ && bundle exec rake spec"   
++      - run:
++          name: Add SSH Key to Authorized Keys
++          command: |
++            sudo chmod 600 /home/circleci/project/key/test001.pem
++            cd ~/.ssh
++            ssh-add /home/circleci/project/key/test001.pem
++      - run:
++          name: Run serverspec
++          command: |
++            cd /home/circleci/project/serverspec
++            bundle exec rake spec
++         
+ workflows:
+   raisetech:
+     jobs:
+-      - cfn-lint
+\ No newline at end of file
++      - cfn-lint
++      - execute-CloudFormation:
++          requires:
++            - cfn-lint        
++      - execute-Ansible:
++          requires:
++            - execute-CloudFormation
++      - execute-serverspec:
++          requires:
++            - execute-Ansible
+\ No newline at end of file
+diff --git a/ansible/ansible.cfg b/ansible/ansible.cfg
+new file mode 100644
+index 0000000..95c87c1
+--- /dev/null
++++ b/ansible/ansible.cfg
+@@ -0,0 +1,4 @@
++[defaults]
++inventory = $HOME/AWS-demo/ansible/inventory
++remote_user = ec2-user
++private_key_file = /home/ec2-user/.ssh/test001.pem
+diff --git a/ansible/inventory b/ansible/inventory
+new file mode 100644
+index 0000000..0e73b5f
+--- /dev/null
++++ b/ansible/inventory
+@@ -0,0 +1,6 @@
++[target_node]
++$EC2_IP
++
++[target_node:vars] 
++ansible_user=ec2-user 
++ansible_ssh_private_key_file="~/.ssh/test001.pem"
+\ No newline at end of file
+diff --git a/ansible/playbook.yml b/ansible/playbook.yml
+new file mode 100644
+index 0000000..2e99f25
+--- /dev/null
++++ b/ansible/playbook.yml
+@@ -0,0 +1,10 @@
++- hosts: "{{ ec2_ip }}"
++  become: yes
++  remote_user: ec2-user
++  roles:
++    - git
++    - node.js
++    - ruby
++    - mysql
++    - unicorn
++    - nginx
+\ No newline at end of file
+diff --git a/ansible/roles/git/tasks/main.yml b/ansible/roles/git/tasks/main.yml
+new file mode 100644
+index 0000000..bd9d461
+--- /dev/null
++++ b/ansible/roles/git/tasks/main.yml
+@@ -0,0 +1,6 @@
++- name: Install git
++  become: true
++  yum:
++    name: git
++    state: latest
++    lock_timeout: 180
+\ No newline at end of file
+diff --git a/ansible/roles/mysql/tasks/main.yml b/ansible/roles/mysql/tasks/main.yml
+new file mode 100644
+index 0000000..9f3a4f1
+--- /dev/null
++++ b/ansible/roles/mysql/tasks/main.yml
+@@ -0,0 +1,35 @@
++# mysqlのインストール
++
++# MariaDBの削除
++- name: Remove MariaDB
++  become: true
++  yum:
++    name: mariadb-server
++    state: absent
++
++# 公開リポジトリを追加
++- name: Install MySQL repository
++  become: true
++  yum:
++    name: 'https://repo.mysql.com//mysql80-community-release-el7-7.noarch.rpm'
++    state: present
++
++- name: Import GPG key 
++  become: true
++  ansible.builtin.rpm_key:
++    state: present
++    key: https://repo.mysql.com/RPM-GPG-KEY-mysql-2022
++
++# mysql本体をインストール
++- name: Install MySQL community server
++  become: true
++  yum:
++    name: mysql-community-server
++    state: present
++
++- name: Start MySQL service
++  become: true
++  service:
++    name: mysqld
++    state: started
++    enabled: yes
+\ No newline at end of file
+diff --git a/ansible/roles/nginx/tasks/main.yml b/ansible/roles/nginx/tasks/main.yml
+new file mode 100644
+index 0000000..ac4c107
+--- /dev/null
++++ b/ansible/roles/nginx/tasks/main.yml
+@@ -0,0 +1,19 @@
++- name: Check if nginx is already installed
++  become: true
++  yum:
++    name: nginx
++    state: present
++  register: check_nginx_installed
++  ignore_errors: true
++
++- name: install the latest version of nginx 
++  command: amazon-linux-extras install nginx1 -y
++  become: true
++  when: check_nginx_installed is failed
++
++- name: start nginx service
++  service:
++    name: nginx
++    state: started
++    enabled: yes
++  become: true
+\ No newline at end of file
+diff --git a/ansible/roles/node.js/main.yml b/ansible/roles/node.js/main.yml
+new file mode 100644
+index 0000000..401a4bf
+--- /dev/null
++++ b/ansible/roles/node.js/main.yml
+@@ -0,0 +1,76 @@
++- name: Update yum cache
++  yum:
++    name: "*"
++    state: latest
++  become: true
++
++- name: Install prerequisites
++  yum:
++    name: "{{ item }}"
++    state: present
++  become: true
++  loop:
++    - gcc-c++
++    - glibc-headers
++    - openssl-devel
++    - readline
++    - libyaml-devel
++    - readline-devel
++    - zlib
++    - zlib-devel
++    - libffi-devel
++    - libxml2
++    - libxslt
++    - libxml2-devel
++    - libxslt-devel
++    - sqlite-devel
++    - libpng-devel
++    - libjpeg-devel
++    - libtiff-devel
++    - gcc
++    - mysql-devel
++    - patch
++    - libicu-devel
++    - ImageMagick
++    - ImageMagick-devel
++    - libcurl
++    - libcurl-devel
++    - curl
++
++- name: Download and install Node.js
++  get_url:
++    url: "https://nodejs.org/dist/v17.9.1/node-v17.9.1-linux-x64.tar.gz"
++    dest: "/tmp/node-v17.9.1-linux-x64.tar.gz"
++  become: true
++
++- name: Extract Node.js
++  unarchive:
++    src: "/tmp/node-v17.9.1-linux-x64.tar.gz"
++    dest: "/opt"
++    remote_src: yes
++    creates: "/opt/node-v17.9.1-linux-x64"
++  become: true
++
++- name: Create symbolic links for Node.js
++  file:
++    src: "/opt/node-v17.9.1-linux-x64"
++    dest: "/opt/node"
++    state: link
++  become: true
++
++- name: Add Node.js to PATH
++  lineinfile:
++    path: "/etc/profile.d/node.sh"
++    line: 'export PATH="/opt/node/bin:$PATH"'
++    create: yes
++  become: true
++
++- name: Install Yarn
++  npm:
++    name: yarn
++    version: 1.22.19
++    state: present
++    global: yes
++  become: true
++  environment:
++    PATH: "/opt/node/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+\ No newline at end of file
+diff --git a/ansible/roles/ruby/tasks/main.yml b/ansible/roles/ruby/tasks/main.yml
+new file mode 100644
+index 0000000..24dc833
+--- /dev/null
++++ b/ansible/roles/ruby/tasks/main.yml
+@@ -0,0 +1,113 @@
++---
++- name: Check if directory exists for .bash_profile
++  stat:
++    path: /home/ec2-user
++  register: bash_profile_directory_exists
++
++- name: Create directory for .bash_profile if it doesn't exist
++  file:
++    path: /home/ec2-user
++    state: directory
++  when: not bash_profile_directory_exists.stat.exists
++
++- name: Check if .bash_profile exists
++  stat:
++    path: /home/ec2-user/.bash_profile
++  register: bash_profile_exists
++
++- name: Create .bash_profile if it doesn't exist
++  file:
++    path: /home/ec2-user/.bash_profile
++    state: touch
++  when: not bash_profile_exists.stat.exists
++
++- name: Add rbenv to PATH in .bash_profile
++  lineinfile: 
++    path: /home/ec2-user/.bash_profile
++    line: 'export PATH="$HOME/.rbenv/bin:$PATH"'
++  when: bash_profile_exists.stat.exists
++
++- name: install rbenv
++  become: yes
++  git: 
++    repo: https://github.com/sstephenson/rbenv.git 
++    dest: /home/ec2-user/.rbenv
++
++- name: edit permission rbenv
++  become: yes
++  file:
++    path: /home/ec2-user/.rbenv
++    state: directory
++    owner: ec2-user
++    group: ec2-user
++
++- name: Add rbenv to PATH
++  lineinfile: 
++    path: /home/circleci/.bash_profile
++    line: 'export PATH="$HOME/.rbenv/bin:$PATH"'
++
++- name: eval rbenv init
++  lineinfile: 
++    path: /home/ec2-user/.bash_profile
++    line: 'eval "$(rbenv init -)"'
++
++- name: rbenv setting
++  shell: bash -lc "source ~/.bash_profile"
++
++#ruby-buildのインストール 
++- name: install ruby-build
++  git:
++    repo: https://github.com/sstephenson/ruby-build.git
++    dest: /home/circleci/.rbenv/plugins/ruby-build
++
++#ruby install 確認
++- name: check ruby installed
++  stat:
++    path: /home/ec2-user/.rbenv/bin/
++  register: ruby_installed
++
++- name: Install dependencies
++  become: true
++  yum:
++    name: "{{ item }}"
++    state: present
++  loop:
++    - git
++    - gcc
++    - bzip2
++    - openssl-devel
++    - libyaml-devel
++    - libffi-devel
++    - readline-devel
++    - zlib-devel
++    - gdbm-devel
++    - ncurses-devel
++
++#rubyのインストール
++- name: Install Ruby 3.1.2
++  become: yes
++  become_user: ec2-user
++  shell: |
++    /home/circleci/.rbenv/bin/rbenv install 3.1.2
++    /home/circleci/.rbenv/bin/rbenv global 3.1.2
++    /home/circleci/.rbenv/bin/rbenv rehash
++  when: not ruby_installed.stat.exists
++
++#rubyを使用可能にする
++- name: set default ruby version rehash
++  become_user: ec2-user
++  shell: bash -lc "rbenv rehash"
++
++#インスタンスで使用するバージョンの設定
++- name: set default ruby version
++  become_user: ec2-user
++  shell: bash -lc "rbenv global 3.1.2"
++
++- name: Display Ruby version
++  become_user: ec2-user
++  shell: bash -lc "ruby --version"
++  register: ruby_version_output
++
++- name: Show Ruby version
++  debug:
++    var: ruby_version_output.stdout_lines
+diff --git a/ansible/roles/ruby/vars/main.yml b/ansible/roles/ruby/vars/main.yml
+new file mode 100644
+index 0000000..fc85362
+--- /dev/null
++++ b/ansible/roles/ruby/vars/main.yml
+@@ -0,0 +1,3 @@
++ruby_version: 3.1.2
++rails_version: 7.0.4
++bundler_version: 2.4.18
+\ No newline at end of file
+diff --git a/ansible/roles/unicorn/tasks/main.yml b/ansible/roles/unicorn/tasks/main.yml
+new file mode 100644
+index 0000000..e114b86
+--- /dev/null
++++ b/ansible/roles/unicorn/tasks/main.yml
+@@ -0,0 +1,43 @@
++- name: Check app installed
++  stat:
++    path: /home/ec2-user/raisetech-live8-sample-app
++  register: app_installed
++
++- name: Set directory permissions
++  ansible.builtin.file:
++    path: /home/ec2-user/raisetech-live8-sample-app
++    state: directory
++    owner: ec2-user  # 適切な所有者に変更する
++    group: ec2-user  # 適切なグループに変更する
++    mode: '0755'    
++
++# サンプルアプリケーションをclone
++- name: Git clone sample app
++  become_user: ec2-user
++  ansible.builtin.git:
++    repo: https://github.com/yuta-ushijima/raisetech-live8-sample-app.git
++    dest: /home/circleci/raisetech-live8-sample-app
++  when: not app_installed.stat.exists
++
++- name: bundler install
++  become: yes
++  become_method: sudo
++  become_user: ec2-user
++  shell: bash -lc "gem install bundler"
++  args:
++    chdir: /home/ec2-user/raisetech-live8-sample-app/
++
++- name: Install g++
++  become: yes
++  become_method: sudo
++  yum:
++    name: gcc-c++
++    state: present
++  
++- name: bundle install
++  become: yes
++  become_method: sudo
++  become_user: ec2-user
++  shell: "/usr/bin/env bash -lc '/home/ec2-user/.rbenv/shims/bundle install'"
++  args:
++    chdir: /home/ec2-user/raisetech-live8-sample-app/
+diff --git a/cloudformation/ec2_test.yml b/cloudformation/ec2_test.yml
+index 5d7d878..7dbebfd 100644
+--- a/cloudformation/ec2_test.yml
++++ b/cloudformation/ec2_test.yml
+@@ -7,7 +7,7 @@ Parameters:
+     Default: cf-test
+   VPCStack:
+     Type: String
+-    Default: cfn-lecture-vpc
++    Default: vpc
+   EC2AMI:
+     Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+     Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
+@@ -16,18 +16,13 @@ Parameters:
+     Default: 192.168.0.0/24
+ 
+ Resources:
+-  NewKeyPair:
+-    Type: 'AWS::EC2::KeyPair'
+-    Properties:
+-      KeyName: !Sub ${Project}-keypair
+-
+   WebSecurityGroup:
+     Type: AWS::EC2::SecurityGroup
+     Properties: 
+       GroupDescription: !Sub ${Project}-sg-web created
+       GroupName: !Sub ${Project}-sg-web
+-      VpcId:
+-        Fn::ImportValue: !Sub ${VPCStack}-VPCID
++      VpcId: !ImportValue
++        Fn::Sub: '${VPCStack}-VPCID'
+       SecurityGroupIngress:
+         - IpProtocol: tcp
+           FromPort: 80
+@@ -46,15 +41,15 @@ Resources:
+     Type: AWS::EC2::Instance
+     Properties:
+       ImageId: !Ref EC2AMI
+-      InstanceType: t2.micro
+-      KeyName: !Ref NewKeyPair
++      InstanceType: t2.small
++      KeyName: test001  # Replace with your actual key name
+       NetworkInterfaces:
+         - AssociatePublicIpAddress: true
+           DeviceIndex: 0
+-          GroupSet:
++          GroupSet:  # Corrected property name
+            - !Ref WebSecurityGroup
+-          SubnetId: 
+-            Fn::ImportValue: !Sub ${VPCStack}-PublicSubnet1
++          SubnetId: !ImportValue
++            Fn::Sub: '${VPCStack}-PublicSubnet1'
+       BlockDeviceMappings: 
+         - DeviceName: "/dev/xvda"
+           Ebs: 
+@@ -72,4 +67,9 @@ Outputs:
+   WebSecurityGroup:
+     Value: !Ref WebSecurityGroup
+     Export:
+-      Name: !Sub ${AWS::StackName}-WebSecurityGroup
+\ No newline at end of file
++      Name: !Sub ${AWS::StackName}-WebSecurityGroup
++  EC2InstanceIP:
++    Description: EC2 Instance IP Address
++    Value: !GetAtt EC2WebServer01.PublicIp
++    Export:
++      Name: !Sub ${AWS::StackName}-PublicIp
+\ No newline at end of file
+diff --git a/cloudformation/elb_test.yml b/cloudformation/elb_test.yml
+index e503876..97e2649 100644
+--- a/cloudformation/elb_test.yml
++++ b/cloudformation/elb_test.yml
+@@ -7,10 +7,10 @@ Parameters:
+     Default: cf-test
+   VPCStack:
+     Type: String
+-    Default: cfn-lecture-vpc
++    Default: vpc
+   EC2Stack:
+     Type: String
+-    Default: cfn-lecture-ec2
++    Default: ec2
+ 
+ Resources:
+   LBSecurityGroup:
+diff --git a/cloudformation/rds_test.yml b/cloudformation/rds_test.yml
+index 5f1b5a2..6f5b1a6 100644
+--- a/cloudformation/rds_test.yml
++++ b/cloudformation/rds_test.yml
+@@ -7,16 +7,16 @@ Parameters:
+     Default: cf-test
+   VPCStack:
+     Type: String
+-    Default: cfn-lecture-vpc
++    Default: vpc
+   EC2Stack:
+     Type: String
+-    Default: cfn-lecture-ec2
++    Default: ec2
+   DBUser:
+     Type: String
+     Default: admin
+   DBPassword:
+     Type: String
+-    Default: xxxxx
++    Default: adminuser
+     NoEcho: true
+   RDSAZ:
+     Type: AWS::EC2::AvailabilityZone::Name
+diff --git a/serverspec/.rspec b/serverspec/.rspec
+new file mode 100644
+index 0000000..16f9cdb
+--- /dev/null
++++ b/serverspec/.rspec
+@@ -0,0 +1,2 @@
++--color
++--format documentation
+diff --git a/serverspec/Gemfile b/serverspec/Gemfile
+new file mode 100644
+index 0000000..c543e90
+--- /dev/null
++++ b/serverspec/Gemfile
+@@ -0,0 +1,8 @@
++# frozen_string_literal: true
++
++source "https://rubygems.org"
++
++gem "serverspec"
++gem "rake"
++gem "ed25519"
++gem "bcrypt_pbkdf"
+\ No newline at end of file
+diff --git a/serverspec/Gemfile.lock b/serverspec/Gemfile.lock
+new file mode 100644
+index 0000000..a727498
+--- /dev/null
++++ b/serverspec/Gemfile.lock
+@@ -0,0 +1,52 @@
++GEM
++  remote: https://rubygems.org/
++  specs:
++    bcrypt_pbkdf (1.1.0)
++    diff-lcs (1.5.0)
++    ed25519 (1.3.0)
++    multi_json (1.15.0)
++    net-scp (4.0.0)
++      net-ssh (>= 2.6.5, < 8.0.0)
++    net-ssh (7.1.0)
++    net-telnet (0.1.1)
++    rake (13.0.6)
++    rspec (3.12.0)
++      rspec-core (~> 3.12.0)
++      rspec-expectations (~> 3.12.0)
++      rspec-mocks (~> 3.12.0)
++    rspec-core (3.12.1)
++      rspec-support (~> 3.12.0)
++    rspec-expectations (3.12.2)
++      diff-lcs (>= 1.2.0, < 2.0)
++      rspec-support (~> 3.12.0)
++    rspec-its (1.3.0)
++      rspec-core (>= 3.0.0)
++      rspec-expectations (>= 3.0.0)
++    rspec-mocks (3.12.4)
++      diff-lcs (>= 1.2.0, < 2.0)
++      rspec-support (~> 3.12.0)
++    rspec-support (3.12.0)
++    serverspec (2.42.2)
++      multi_json
++      rspec (~> 3.0)
++      rspec-its
++      specinfra (~> 2.72)
++    sfl (2.3)
++    specinfra (2.85.0)
++      net-scp
++      net-ssh (>= 2.7)
++      net-telnet (= 0.1.1)
++      sfl
++
++PLATFORMS
++  x86_64-linux
++
++DEPENDENCIES
++  bcrypt_pbkdf
++  ed25519
++  rake
++  serverspec
++
++BUNDLED WITH
++   2.4.7
++   
+\ No newline at end of file
+diff --git a/serverspec/Rakefile b/serverspec/Rakefile
+new file mode 100644
+index 0000000..33e84f5
+--- /dev/null
++++ b/serverspec/Rakefile
+@@ -0,0 +1,30 @@
++require 'rake'
++require 'rspec/core/rake_task'
++
++require 'rake'
++require 'rspec/core/rake_task'
++
++task :spec    => 'spec:all'
++task :default => :spec
++
++namespace :spec do
++  targets = []
++  Dir.glob('./spec/*').each do |dir|
++    next unless File.directory?(dir)
++    target = File.basename(dir)
++    target = "_#{target}" if target == "default"
++    targets << target
++  end
++
++  task :all     => targets
++  task :default => :all
++
++  targets.each do |target|
++    original_target = target == "_default" ? target[1..-1] : target
++    desc "Run serverspec tests to #{original_target}"
++    RSpec::Core::RakeTask.new(target.to_sym) do |t|
++      ENV['TARGET_HOST'] = original_target
++      t.pattern = "spec/#{original_target}/*_spec.rb"
++    end
++  end
++end
+\ No newline at end of file
+diff --git a/serverspec/spec/44.201.33.198/sample_spec.rb b/serverspec/spec/44.201.33.198/sample_spec.rb
+new file mode 100644
+index 0000000..33cd1ad
+--- /dev/null
++++ b/serverspec/spec/44.201.33.198/sample_spec.rb
+@@ -0,0 +1,16 @@
++require 'spec_helper'
++
++listen_port = 80
++
++describe package('git') do
++  it { should be_installed }
++end
++
++
++describe package('nginx') do
++  it { should be_installed }
++end
++
++describe port(listen_port) do
++  it { should be_listening }
++end
+diff --git a/serverspec/spec/spec_helper.rb b/serverspec/spec/spec_helper.rb
+new file mode 100644
+index 0000000..4c43298
+--- /dev/null
++++ b/serverspec/spec/spec_helper.rb
+@@ -0,0 +1,34 @@
++require 'serverspec'
++require 'net/ssh'
++
++set :backend, :ssh
++
++if ENV['ASK_SUDO_PASSWORD']
++  begin
++    require 'highline/import'
++  rescue LoadError
++    fail "highline is not available. Try installing it."
++  end
++  set :sudo_password, ask("Enter sudo password: ") { |q| q.echo = false }
++else
++  set :sudo_password, ENV['SUDO_PASSWORD']
++end
++
++host = ENV['TARGET_HOST']
++
++options = Net::SSH::Config.for(host)
++
++options[:user] ||= 'ec2-user'
++
++set :host,        options[:host_name] || host
++set :ssh_options, options
++
++# Disable sudo
++# set :disable_sudo, true
++
++
++# Set environment variables
++# set :env, :LANG => 'C', :LC_MESSAGES => 'C'
++
++# Set PATH
++# set :path, '/sbin:/usr/local/sbin:$PATH'
+\ No newline at end of file

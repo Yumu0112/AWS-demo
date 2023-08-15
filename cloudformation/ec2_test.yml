@@ -7,7 +7,7 @@ Parameters:
     Default: cf-test
   VPCStack:
     Type: String
-    Default: cfn-lecture-vpc
+    Default: vpc
   EC2AMI:
     Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
     Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
@@ -16,18 +16,13 @@ Parameters:
     Default: 192.168.0.0/24
 
 Resources:
-  NewKeyPair:
-    Type: 'AWS::EC2::KeyPair'
-    Properties:
-      KeyName: !Sub ${Project}-keypair
-
   WebSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties: 
       GroupDescription: !Sub ${Project}-sg-web created
       GroupName: !Sub ${Project}-sg-web
-      VpcId:
-        Fn::ImportValue: !Sub ${VPCStack}-VPCID
+      VpcId: !ImportValue
+        Fn::Sub: '${VPCStack}-VPCID'
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 80
@@ -46,15 +41,15 @@ Resources:
     Type: AWS::EC2::Instance
     Properties:
       ImageId: !Ref EC2AMI
-      InstanceType: t2.micro
-      KeyName: !Ref NewKeyPair
+      InstanceType: t2.small
+      KeyName: test001  # Replace with your actual key name
       NetworkInterfaces:
         - AssociatePublicIpAddress: true
           DeviceIndex: 0
-          GroupSet:
+          GroupSet:  # Corrected property name
            - !Ref WebSecurityGroup
-          SubnetId: 
-            Fn::ImportValue: !Sub ${VPCStack}-PublicSubnet1
+          SubnetId: !ImportValue
+            Fn::Sub: '${VPCStack}-PublicSubnet1'
       BlockDeviceMappings: 
         - DeviceName: "/dev/xvda"
           Ebs: 
@@ -73,3 +68,8 @@ Outputs:
     Value: !Ref WebSecurityGroup
     Export:
       Name: !Sub ${AWS::StackName}-WebSecurityGroup
+  EC2InstanceIP:
+    Description: EC2 Instance IP Address
+    Value: !GetAtt EC2WebServer01.PublicIp
+    Export:
+      Name: !Sub ${AWS::StackName}-PublicIp

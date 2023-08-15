@@ -7,16 +7,16 @@ Parameters:
     Default: cf-test
   VPCStack:
     Type: String
-    Default: cfn-lecture-vpc
+    Default: vpc
   EC2Stack:
     Type: String
-    Default: cfn-lecture-ec2
+    Default: ec2
   DBUser:
     Type: String
     Default: admin
   DBPassword:
     Type: String
-    Default: xxxxx
+    Default: adminuser
     NoEcho: true
   RDSAZ:
     Type: AWS::EC2::AvailabilityZone::Name
