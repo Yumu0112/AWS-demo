@@ -10,7 +10,7 @@
   
 ## 構成図  
   
-![structure](image13/lec14-newInstance.drawio.png)  
+![structure](image13/lec14.drawio.png)  
   
 ## 手順　　
 　　
