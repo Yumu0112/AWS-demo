@@ -36,14 +36,14 @@
 
     yumをアップデートし、gitとjavaをインストール  
 
-    ```
+  ```
     sudo yum update
     
     sudo yum install git
     
     sudo yum install java  
 
-    ```
+  ```
   
 - RDS  
   
@@ -59,36 +59,51 @@
     sudo yum install --enablerepo=mysql80-community mysql-community-server
     sudo yum install --enablerepo=mysql80-community mysql-community-devel
 
-    ```
+  ```
 
     環境ができたらMySQLに接続  
       
-    ```
+  ```
     mysql -h RDSのエンドポイント -P 3306 -u ユーザーネーム -p
-    ```  
+  ```  
       
     パスワードを入力してログインを確認　　
   
 
 ### Gitでリポジトリをクローンしてアプリを起動　　
   
-デプロイするアプリをクローンしたら、application.propatiesに必要な項目を記入する。 
-VSCodeからもSSHでインスタンスに接続し、そのままそこから編集を行なった。  
-   
+    デプロイするアプリをクローンしたら、application.propatiesに必要な項目を記入する。 
+    VSCodeからもSSHでインスタンスに接続し、そのままそこから編集を行なった。  
+    
   ```
-  #リポジトリからクローン
-  git clone ~~~~
+    #リポジトリからクローン
+    git clone ~~~~
     
   ```
   
   ```
-  #application.propaties
+    #application.propaties
+        
+    spring.datasource.url=jdbc:mysql://RDSのエンドポイント:3306/DB名
+    spring.datasource.username=ユーザー名
+    spring.datasource.password=パスワード
+    #MySQLと接続するためのドライバーを設定
+    spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+    #起動できなかった時のデバッグ用
+    logging.level.root=DEBUG    
+  ```  
+  
+  アプリをビルドして起動  
     
-  spring.datasource.url=jdbc:mysql://RDSのエンドポイント:3306/DB名
-  spring.datasource.username=ユーザー名
-  spring.datasource.password=パスワード
-  #MySQLと接続するためのドライバーを設定
-  spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
-  #起動できなかった時のデバッグ用
-  logging.level.root=DEBUG    
   ```
+   ./gradlew build
+  
+   ./gradlew bootRun
+  ```  
+
+### 実行結果  
+  
+![structure](java-img/get-list.png)  
+
+![structure](java-img/get-req.png)   
+     
