@@ -64,12 +64,13 @@
     環境ができたらMySQLに接続  
       
   ```
-    mysql -h RDSのエンドポイント -P 3306 -u ユーザーネーム -p
+    mysql -h RDSのエンドポイント -P 3306 -u ユーザーネーム -p  
+      
   ```  
       
     パスワードを入力してログインを確認　　
   
-
+  
 ### Gitでリポジトリをクローンしてアプリを起動　　
   
     デプロイするアプリをクローンしたら、application.propatiesに必要な項目を記入する。 
@@ -79,9 +80,6 @@
     #リポジトリからクローン
     git clone ~~~~
     
-  ```
-  
-  ```
     #application.propaties
         
     spring.datasource.url=jdbc:mysql://RDSのエンドポイント:3306/DB名
@@ -90,15 +88,16 @@
     #MySQLと接続するためのドライバーを設定
     spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
     #起動できなかった時のデバッグ用
-    logging.level.root=DEBUG    
+    logging.level.root=DEBUG  
+         
   ```  
   
   アプリをビルドして起動  
     
   ```
-   ./gradlew build
+   ./gradlew build  
   
-   ./gradlew bootRun
+   ./gradlew bootRun  
   ```  
 
 ### 実行結果  
